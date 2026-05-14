@@ -20,6 +20,9 @@
       "output": "dist"
     },
     "publish": null,
+    "asarUnpack": [
+      "node_modules/electron-store/**"
+    ],
     "win": {
       "target": [
         {
