@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Controle Industrial de Sucata Desktop</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif}
+body{background:#0f172a;color:#e2e8f0;padding:15px}
+.container{max-width:1400px;margin:0 auto}
+h1{color:#38bdf8;text-align:center;margin-bottom:10px}
+.subtitle{text-align:center;color:#94a3b8;margin-bottom:20px;font-size:14px}
+.tabs{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+.tab{padding:12px 20px;background:#1e293b;border:1px solid #334155;border-radius:8px;cursor:pointer}
+.tab.active{background:#38bdf8;color:#0f172a;font-weight:bold}
+.content{display:none}
+.content.active{display:block}
+.card{background:#1e293b;padding:20px;border-radius:12px;margin-bottom:15px;border:1px solid #334155}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:15px}
+.grid-2{grid-template-columns:repeat(auto-fit,minmax(400px,1fr))}
+label{display:block;margin:10px 0 5px;font-size:14px;color:#94a3b8}
+input,select{width:100%;padding:12px;background:#0f172a;border:1px solid #475569;border-radius:8px;color:#fff;font-size:16px}
+input:disabled{background:#1e293b;color:#64748b}
+button{padding:12px 20px;background:#38bdf8;color:#0f172a;border:none;border-radius:8px;font-size:16px;font-weight:bold;cursor:pointer;margin-top:10px;margin-right:10px}
+.btn-green{background:#22c55e}
+.btn-orange{background:#f97316;color:#fff}
+.btn-red{background:#ef4444;color:#fff}
+.btn-small{padding:6px 12px;font-size:14px;margin:0}
+table{width:100%;font-size:14px;margin-top:15px;border-collapse:collapse}
+th,td{padding:10px;border-bottom:1px solid #334155;text-align:left}
+th{color:#38bdf8}
+.kpi{text-align:center}
+.kpi h3{font-size:14px;color:#94a3b8}
+.kpi p{font-size:28px;font-weight:bold;color:#38bdf8;margin-top:5px}
+.status{font-size:12px;text-align:center;margin-top:10px;min-height:18px}
+.codigo{background:#0f172a;padding:4px 8px;border-radius:4px;font-family:monospace;color:#38bdf8}
+.busca-rapida{margin-bottom:15px}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>Controle Industrial de Sucata Desktop</h1>
+<div class="subtitle" id="empresaAtiva">Matriz: Não configurada</div>
+<div class="tabs">
+<div class="tab active" onclick="trocarTab('dashboard')">Dashboard</div>
+<div class="tab" onclick="trocarTab('lancamento')">Lançamento</div>
+<div class="tab" onclick="trocarTab('relatorios')">Relatórios</div>
+<div class="tab" onclick="trocarTab('config')">Config Geral</div>
+</div>
+<div id="dashboard" class="content active">
+<div class="card">
+<label>Filtrar Dashboard por Unidade</label>
+<select id="dashUnidade" onchange="atualizarDashboard()"><option value="">Todas as Unidades</option></select>
+</div>
+<div class="card grid">
+<div class="kpi"><h3>KG HOJE</h3><p id="kpiHoje">0</p></div>
+<div class="kpi"><h3>KG MÊS</h3><p id="kpiMes">0</p></div>
+<div class="kpi"><h3>VALOR MÊS R$</h3><p id="kpiValor">0</p></div>
+<div class="kpi"><h3>LANÇAMENTOS</h3><p id="kpiTotal">0</p></div>
+</div>
+<div class="card grid grid-2">
+<div><h3>Kg por Unidade</h3><canvas id="chartUnidade"></canvas></div>
+<div><h3>Kg por Setor</h3><canvas id="chartSetor"></canvas></div>
+</div>
+</div>
+<div id="lancamento" class="content">
+<div class="card">
+<h3>Pasta da Base de Dados</h3>
+<button class="btn-green" onclick="ativarBackupExtensao()">Escolher/Trocar Pasta</button>
+<div class="status" id="statusPasta">Aguardando configuração...</div>
+</div>
+<div class="card">
+<h3>Novo Lançamento <span class="codigo" id="proximoLancCod">LAN-20260514-0001</span></h3>
+<div class="grid">
+<div><label>Unidade *</label><select id="lancUnidade" onchange="carregarSetores()"></select></div>
+<div><label>Setor *</label><select id="lancSetor" onchange="carregarMaquinas()"></select></div>
+<div><label>Máquina *</label><select id="lancMaquina"></select></div>
+</div>
+<div class="grid">
+<div><label>Tipo de Sucata *</label><select id="lancTipoSucata" onchange="carregarValorBase()"></select></div>
+<div><label>Peso (kg) *</label><input type="number" id="lancPeso" step="0.1" oninput="calcularValor()"></div>
+<div><label>Valor Base R$/kg</label><input type="number" id="lancValorBase" disabled></div>
+<div><label>Valor Total R$</label><input type="number" id="lancValorTotal" disabled></div>
+</div>
+<label>Observação / OS</label><input type="text" id="lancObs">
+<button onclick="salvarLancamento()">Salvar Lançamento</button>
+<div class="status" id="statusLanc"></div>
+</div>
+</div>
+<div id="relatorios" class="content">
+<div class="card">
+<h3>Gerar Relatórios</h3>
+<div class="busca-rapida">
+<label>Pesquisar Lançamento</label>
+<input type="text" id="buscaLanc" placeholder="Digite código, OS, máquina..." oninput="buscarLancamento()">
+</div>
+<div class="grid">
+<div><label>Unidade</label><select id="relUnidade"><option value="">Todas</option></select></div>
+<div><label>Data Início</label><input type="date" id="relDataIni"></div>
+<div><label>Data Fim</label><input type="date" id="relDataFim"></div>
+<div><label>Setor</label><select id="relSetor"><option value="">Todos</option></select></div>
+</div>
+<button onclick="gerarRelatorio()">Filtrar</button>
+<button class="btn-green" onclick="exportarCSV()">Exportar Excel/CSV</button>
+<button class="btn-orange" onclick="exportarPDF()">Exportar PDF</button>
+<table id="tabelaRelatorio">
+<thead><tr><th>Cód.Lanç</th><th>Data</th><th>Unidade</th><th>Setor</th><th>Máquina</th><th>Tipo</th><th>Kg</th><th>R$/kg</th><th>Total R$</th><th>Ação</th></tr></thead>
+<tbody></tbody>
+</table>
+</div>
+</div>
+<div id="config" class="content">
+<div class="card">
+<h3>1. Matriz / Empresa Principal</h3>
+<div class="grid">
+<div><label>Nome da Matriz</label><input type="text" id="cadMatrizNome" placeholder="Ex: Metalúrgica São Paulo"></div>
+<div><label>CNPJ</label><input type="text" id="cadMatrizCnpj"></div>
+</div>
+<button onclick="salvarMatriz()">Salvar Matriz</button>
+</div>
+<div class="grid grid-2">
+<div class="card">
+<h3>2. Unidades / Filiais <span class="codigo">Auto: FIL-001</span></h3>
+<label>Nome da Unidade</label><input type="text" id="cadUnidadeNome" placeholder="Ex: Filial Campinas">
+<button onclick="cadastrarUnidade()">Adicionar Unidade</button>
+<table id="tabelaUnidades"><thead><tr><th>Código</th><th>Unidade</th><th>Ação</th></tr></thead><tbody></tbody></table>
+</div>
+<div class="card">
+<h3>3. Setores <span class="codigo">Auto: SET-001</span></h3>
+<label>Unidade</label><select id="cadSetorUnidade"></select>
+<label>Nome do Setor</label><input type="text" id="cadSetorNome">
+<button onclick="cadastrarSetor()">Adicionar Setor</button>
+<table id="tabelaSetores"><thead><tr><th>Código</th><th>Unidade</th><th>Setor</th><th>Ação</th></tr></thead><tbody></tbody></table>
+</div>
+</div>
+<div class="grid grid-2">
+<div class="card">
+<h3>4. Máquinas <span class="codigo">Auto: MAQ-001</span></h3>
+<label>Unidade</label><select id="cadMaqUnidade" onchange="carregarSetoresMaq()"></select>
+<label>Setor</label><select id="cadMaqSetor"></select>
+<label>Nome da Máquina</label><input type="text" id="cadMaqNome">
+<button onclick="cadastrarMaquina()">Adicionar Máquina</button>
+<table id="tabelaMaquinas"><thead><tr><th>Código</th><th>Unidade</th><th>Setor</th><th>Máquina</th><th>Ação</th></tr></thead><tbody></tbody></table>
+</div>
+<div class="card">
+<h3>5. Tabela Geral de Valores <span class="codigo">Auto: SUC-001</span></h3>
+<label>Tipo de Sucata</label><input type="text" id="cadTipoSucata" placeholder="Ex: Cavaco Aço 1020">
+<label>Valor Base R$/kg</label><input type="number" id="cadValorSucata" step="0.01">
+<button onclick="cadastrarTipoSucata()">Adicionar/Atualizar Valor</button>
+<table id="tabelaValores"><thead><tr><th>Código</th><th>Tipo Sucata</th><th>R$/kg</th><th>Ação</th></tr></thead><tbody></tbody></table>
+</div>
+</div>
+</div>
+</div>
+<script>
+const { ipcRenderer } = require('electron');
+const { jsPDF } = window.jspdf;
+let db = JSON.parse(localStorage.getItem('sucataDB_v3') || '{"matriz":{},"unidades":[],"setores":[],"maquinas":[],"tiposSucata":[],"lancamentos":[],"contadores":{"unidade":0,"setor":0,"maquina":0,"sucata":0,"lancamento":{}}}');
+let chartUnidade, chartSetor;
+let dadosRelatorioAtual = [];
+
+async function salvarArquivo(nome, conteudo) {
+  const res = await ipcRenderer.invoke('salvar-backup', { nome, conteudo });
+  if (res.sucesso) {
+    document.getElementById('statusLanc').textContent = `✓ Salvo em ${res.pasta}`;
+    document.getElementById('statusLanc').style.color = '#22c55e';
+    setTimeout(() => document.getElementById('statusLanc').textContent = '', 3000);
+  } else {
+    document.getElementById('statusLanc').textContent = '❌ ' + res.erro;
+    document.getElementById('statusLanc').style.color = '#ef4444';
+  }
+}
+
+async function ativarBackupExtensao() {
+  const pasta = await ipcRenderer.invoke('escolher-pasta');
+  if (pasta) {
+    document.getElementById('statusPasta').textContent = `✓ Pasta configurada: ${pasta}`;
+    document.getElementById('statusPasta').style.color = '#22c55e';
+  }
+}
+
+async function verificarPastaSalva() {
+  const pasta = await ipcRenderer.invoke('get-pasta');
+  if (pasta) {
+    document.getElementById('statusPasta').textContent = `✓ Pasta: ${pasta}`;
+    document.getElementById('statusPasta').style.color = '#22c55e';
+  } else {
+    document.getElementById('statusPasta').textContent = '⚠ Clique em "Escolher/Trocar Pasta"';
+    document.getElementById('statusPasta').style.color = '#f97316';
+  }
+}
+
+function gerarCodigo(tipo) {
+    if (!db.contadores) db.contadores = {unidade:0, setor:0, maquina:0, sucata:0, lancamento:{}};
+    if (tipo === 'lancamento') {
+        const hoje = new Date().toISOString().slice(0,10).replace(/-/g,'');
+        if (!db.contadores.lancamento[hoje]) db.contadores.lancamento[hoje] = 0;
+        db.contadores.lancamento[hoje]++;
+        return `LAN-${hoje}-${String(db.contadores.lancamento[hoje]).padStart(4,'0')}`;
+    }
+    db.contadores[tipo]++;
+    const prefixos = {unidade:'FIL', setor:'SET', maquina:'MAQ', sucata:'SUC'};
+    return `${prefixos[tipo]}-${String(db.contadores[tipo]).padStart(3,'0')}`;
+}
+
+function init() {
+    if (!db.contadores) db.contadores = {unidade:0, setor:0, maquina:0, sucata:0, lancamento:{}};
+    atualizarNomeEmpresa();
+    carregarSelects();
+    atualizarDashboard();
+    atualizarTabelasConfig();
+    atualizarProximoLancamento();
+    verificarPastaSalva();
+    const hoje = new Date().toISOString().slice(0,10);
+    document.getElementById('relDataIni').value = hoje.slice(0,8) + '01';
+    document.getElementById('relDataFim').value = hoje;
+}
+
+function atualizarProximoLancamento() {
+    const hoje = new Date().toISOString().slice(0,10).replace(/-/g,'');
+    const prox = (db.contadores.lancamento[hoje] || 0) + 1;
+    document.getElementById('proximoLancCod').textContent = `LAN-${hoje}-${String(prox).padStart(4,'0')}`;
+}
+
+function trocarTab(tab) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+    event.target.classList.add('active');
+    document.getElementById(tab).classList.add('active');
+    if(tab === 'dashboard') atualizarDashboard();
+}
+
+function salvarMatriz() {
+    db.matriz = { nome: document.getElementById('cadMatrizNome').value, cnpj: document.getElementById('cadMatrizCnpj').value };
+    salvarDB(); atualizarNomeEmpresa();
+}
+
+function cadastrarUnidade() {
+    const nome = document.getElementById('cadUnidadeNome').value.trim();
+    if (!nome) return alert('Preencha o nome');
+    const cod = gerarCodigo('unidade');
+    db.unidades.push({cod, nome}); salvarDB(); carregarSelects(); atualizarTabelasConfig();
+    document.getElementById('cadUnidadeNome').value = '';
+}
+
+function cadastrarSetor() {
+    const unidade = document.getElementById('cadSetorUnidade').value;
+    const nome = document.getElementById('cadSetorNome').value.trim();
+    if (!unidade ||!nome) return alert('Preencha unidade e setor');
+    db.setores.push({id: gerarCodigo('setor'), unidade, nome}); salvarDB(); carregarSelects(); atualizarTabelasConfig();
+    document.getElementById('cadSetorNome').value = '';
+}
+
+function carregarSetoresMaq() {
+    const unidade = document.getElementById('cadMaqUnidade').value;
+    document.getElementById('cadMaqSetor').innerHTML = db.setores.filter(s => s.unidade === unidade).map(s => `<option value="${s.id}">${s.nome}</option>`).join('');
+}
+
+function cadastrarMaquina() {
+    const unidade = document.getElementById('cadMaqUnidade').value;
+    const setorId = document.getElementById('cadMaqSetor').value;
+    const nome = document.getElementById('cadMaqNome').value.trim();
+    if (!unidade ||!setorId ||!nome) return alert('Preencha todos os campos');
+    const setor = db.setores.find(s => s.id == setorId);
+    db.maquinas.push({id: gerarCodigo('maquina'), unidade, setorId, setorNome: setor.nome, nome});
+    salvarDB(); carregarSelects(); atualizarTabelasConfig();
+    document.getElementById('cadMaqNome').value = '';
+}
+
+function cadastrarTipoSucata() {
+    const tipo = document.getElementById('cadTipoSucata').value.trim();
+    const valor = parseFloat(document.getElementById('cadValorSucata').value) || 0;
+    if (!tipo) return alert('Preencha o tipo');
+    const idx = db.tiposSucata.findIndex(t => t.tipo === tipo);
+    if (idx >= 0) db.tiposSucata[idx].valor = valor;
+    else db.tiposSucata.push({id: gerarCodigo('sucata'), tipo, valor});
+    salvarDB(); carregarSelects(); atualizarTabelasConfig();
+    document.getElementById('cadTipoSucata').value = ''; document.getElementById('cadValorSucata').value = '';
+}
+
+function excluirItem(tipo, id) {
+    if (tipo === 'unidade' &&!confirm('Excluir unidade? Setores e máquinas vinculados serão afetados.')) return;
+    if (tipo === 'unidade') db.unidades = db.unidades.filter(u => u.cod!== id);
+    if (tipo === 'setor') db.setores = db.setores.filter(s => s.id!== id);
+    if (tipo === 'maquina') db.maquinas = db.maquinas.filter(m => m.id!== id);
+    if (tipo === 'valor') db.tiposSucata = db.tiposSucata.filter(t => t.id!== id);
+    salvarDB(); carregarSelects(); atualizarTabelasConfig();
+}
+
+function carregarSetores() {
+    const unidade = document.getElementById('lancUnidade').value;
+    document.getElementById('lancSetor').innerHTML = db.setores.filter(s => s.unidade === unidade).map(s => `<option value="${s.id}">${s.nome}</option>`).join('');
+    carregarMaquinas();
+}
+
+function carregarMaquinas() {
+    const setorId = document.getElementById('lancSetor').value;
+    document.getElementById('lancMaquina').innerHTML = db.maquinas.filter(m => m.setorId == setorId).map(m => `<option value="${m.id}">${m.nome}</option>`).join('');
+}
+
+function carregarValorBase() {
+    const tipo = document.getElementById('lancTipoSucata').value;
+    const sucata = db.tiposSucata.find(t => t.tipo === tipo);
+    document.getElementById('lancValorBase').value = sucata? sucata.valor.toFixed(2) : 0;
+    calcularValor();
+}
+
+function calcularValor() {
+    const peso = parseFloat(document.getElementById('lancPeso').value) || 0;
+    const valor = parseFloat(document.getElementById('lancValorBase').value) || 0;
+    document.getElementById('lancValorTotal').value = (peso * valor).toFixed(2);
+}
+
+async function salvarLancamento() {
+    const unidade = db.unidades.find(u => u.cod === document.getElementById('lancUnidade').value);
+    const setor = db.setores.find(s => s.id == document.getElementById('lancSetor').value);
+    const maq = db.maquinas.find(m => m.id == document.getElementById('lancMaquina').value);
+    const cod = gerarCodigo('lancamento');
+    const lanc = {
+        id: cod, data: new Date().toISOString(), dataBR: new Date().toLocaleString('pt-BR'),
+        unidade: unidade?.nome || '', unidadeCod: unidade?.cod || '',
+        setor: setor?.nome || '', maquina: maq?.nome || '',
+        tipoSucata: document.getElementById('lancTipoSucata').value,
+        peso: parseFloat(document.getElementById('lancPeso').value) || 0,
+        valorBase: parseFloat(document.getElementById('lancValorBase').value) || 0,
+        valorTotal: parseFloat(document.getElementById('lancValorTotal').value) || 0,
+        obs: document.getElementById('lancObs').value
+    };
+    if (!lanc.unidade ||!lanc.setor ||!lanc.maquina ||!lanc.peso) return alert('Preencha todos os campos obrigatórios');
+    db.lancamentos.unshift(lanc); salvarDB();
+    await salvarArquivo(`${cod}_${lanc.unidadeCod}.json`, JSON.stringify(lanc, null, 2));
+    ['lancPeso','lancObs'].forEach(id => document.getElementById(id).value = '');
+    atualizarDashboard(); atualizarProximoLancamento();
+}
+
+function atualizarDashboard() {
+    const unidadeFiltro = document.getElementById('dashUnidade').value;
+    const mes = new Date().getMonth();
+    const ano = new Date().getFullYear();
+    const lancMes = db.lancamentos.filter(l => {
+        const d = new Date(l.data);
+        return d.getMonth() === mes && d.getFullYear() === ano && (!unidadeFiltro || l.unidadeCod === unidadeFiltro);
+    });
+    const lancHoje = lancMes.filter(l => new Date(l.data).toDateString() === new Date().toDateString());
+    document.getElementById('kpiHoje').textContent = lancHoje.reduce((s,l) => s+l.peso, 0).toFixed(1) + ' kg';
+    document.getElementById('kpiMes').textContent = lancMes.reduce((s,l) => s+l.peso, 0).toFixed(1) + ' kg';
+    document.getElementById('kpiValor').textContent = 'R$ ' + lancMes.reduce((s,l) => s+l.valorTotal, 0).toFixed(2);
+    document.getElementById('kpiTotal').textContent = lancMes.length;
+
+    const porUnid = {}, porSetor = {};
+    lancMes.forEach(l => { porUnid[l.unidade] = (porUnid[l.unidade] || 0) + l.peso; porSetor[l.setor] = (porSetor[l.setor] || 0) + l.peso; });
+    if(chartUnidade) chartUnidade.destroy(); if(chartSetor) chartSetor.destroy();
+    chartUnidade = new Chart(document.getElementById('chartUnidade'), {type:'bar',data:{labels:Object.keys(porUnid),datasets:[{data:Object.values(porUnid),backgroundColor:'#38bdf8'}]},options:{plugins:{legend:{display:false}}}});
+    chartSetor = new Chart(document.getElementById('chartSetor'), {type:'bar',data:{labels:Object.keys(porSetor),datasets:[{data:Object.values(porSetor),backgroundColor:'#22c55e'}]},options:{plugins:{legend:{display:false}}}});
+}
+
+function buscarLancamento() {
+    const termo = document.getElementById('buscaLanc').value.toLowerCase();
+    if (!termo) return gerarRelatorio();
+    dadosRelatorioAtual = db.lancamentos.filter(l =>
+        l.id.toLowerCase().includes(termo) ||
+        l.obs.toLowerCase().includes(termo) ||
+        l.maquina.toLowerCase().includes(termo) ||
+        l.tipoSucata.toLowerCase().includes(termo)
+    );
+    renderizarTabelaRelatorio();
+}
+
+function gerarRelatorio() {
+    const ini = new Date(document.getElementById('relDataIni').value);
+    const fim = new Date(document.getElementById('relDataFim').value + 'T23:59:59');
+    const unidade = document.getElementById('relUnidade').value;
+    const setor = document.getElementById('relSetor').value;
+    dadosRelatorioAtual = db.lancamentos.filter(l => {
+        const d = new Date(l.data);
+        return d >= ini && d <= fim && (!unidade || l.unidadeCod === unidade) && (!setor || l.setor === setor);
+    });
+    renderizarTabelaRelatorio();
+}
+
+function renderizarTabelaRelatorio() {
+    document.querySelector('#tabelaRelatorio tbody').innerHTML = dadosRelatorioAtual.map(l =>
+        `<tr><td><span class="codigo">${l.id}</span></td><td>${l.dataBR.split(',')[0]}</td><td>${l.unidade}</td><td>${l.setor}</td><td>${l.maquina}</td><td>${l.tipoSucata}</td><td>${l.peso}</td><td>${l.valorBase.toFixed(2)}</td><td>${l.valorTotal.toFixed(2)}</td><td><button class="btn-red btn-small" onclick="excluirLancamento('${l.id}')">Excluir</button></td></tr>`
+    ).join('');
+}
+
+function excluirLancamento(id) {
+    if (!confirm(`Excluir lançamento ${id}?`)) return;
+    db.lancamentos = db.lancamentos.filter(l => l.id!== id);
+    salvarDB();
+    gerarRelatorio();
+    atualizarDashboard();
+}
+
+async function exportarCSV() {
+    let csv = 'Codigo,Data,Unidade,Setor,Maquina,Tipo_Sucata,Peso_Kg,Valor_Base,Valor_Total,Observacao\n';
+    const dados = dadosRelatorioAtual.length? dadosRelatorioAtual : db.lancamentos;
+    dados.forEach(l => csv += `"${l.id}","${l.dataBR}","${l.unidade}","${l.setor}","${l.maquina}","${l.tipoSucata}",${l.peso},${l.valorBase},${l.valorTotal},"${l.obs}"\n`);
+    await salvarArquivo(`Relatorio_Sucata_${new Date().toISOString().slice(0,10)}.csv`, csv);
+}
+
+function exportarPDF() {
+    const dados = dadosRelatorioAtual.length? dadosRelatorioAtual : db.lancamentos;
+    if (!dados.length) return alert('Gere um relatório primeiro');
+
+    const doc = new jsPDF();
+    const matriz = db.matriz.nome || 'Empresa';
+    const periodo = `${document.getElementById('relDataIni').value} a ${document.getElementById('relDataFim').value}`;
+
+    doc.setFontSize(16); doc.text(matriz, 14, 15);
+    doc.setFontSize(12); doc.text('Relatório de Controle Industrial de Sucata', 14, 22);
+    doc.setFontSize(10); doc.text(`Período: ${periodo}`, 14, 28);
+    doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')}`, 14, 33);
+
+    const totalKg = dados.reduce((s,l) => s+l.peso, 0);
+    const totalR$ = dados.reduce((s,l) => s+l.valorTotal, 0);
+
+    doc.autoTable({
+        startY: 40,
+        head: [['Cód','Data','Unidade','Setor','Máquina','Tipo','Kg','R$/kg','Total R$']],
+        body: dados.map(l => [
+            l.id, l.dataBR.split(',')[0], l.unidade, l.setor, l.maquina,
+            l.tipoSucata, l.peso.toFixed(1), l.valorBase.toFixed(2), l.valorTotal.toFixed(2)
+        ]),
+        foot: [['','','','','','TOTAL', totalKg.toFixed(1), '', 'R$ ' + totalR$.toFixed(2)]],
+        theme: 'grid',
+        headStyles: {fillColor: [56, 189, 248], fontSize: 8},
+        bodyStyles: {fontSize: 8},
+        footStyles: {fillColor: [30, 41, 59], fontStyle: 'bold', fontSize: 9}
+    });
+
+    doc.save(`Relatorio_Sucata_${new Date().toISOString().slice(0,10)}.pdf`);
+}
+
+function salvarDB() { localStorage.setItem('sucataDB_v3', JSON.stringify(db)); }
+
+function atualizarNomeEmpresa() {
+    document.getElementById('empresaAtiva').textContent = db.matriz.nome? `Matriz: ${db.matriz.nome} - ${db.matriz.cnpj || 'CNPJ N/I'}` : 'Matriz: Não configurada';
+    document.getElementById('cadMatrizNome').value = db.matriz.nome || '';
+    document.getElementById('cadMatrizCnpj').value = db.matriz.cnpj || '';
+}
+
+function carregarSelects() {
+    const unids = db.unidades.map(u => `<option value="${u.cod}">${u.nome} - ${u.cod}</option>`).join('');
+    ['lancUnidade','relUnidade','cadSetorUnidade','cadMaqUnidade','dashUnidade'].forEach(id => {
+        const el = document.getElementById(id), val = el.value;
+        el.innerHTML = (id.includes('rel')||id.includes('dash')? '<option value="">Todas</option>' : '') + unids;
+        el.value = val;
+    });
+    document.getElementById('relSetor').innerHTML = '<option value="">Todos</option>' + [...new Set(db.setores.map(s => s.nome))].map(s => `<option>${s}</option>`).join('');
+    document.getElementById('lancTipoSucata').innerHTML = db.tiposSucata.map(t => `<option>${t.tipo}</option>`).join('');
+    carregarSetores();
+}
+
+function atualizarTabelasConfig() {
+    document.querySelector('#tabelaUnidades tbody').innerHTML = db.unidades.map(u =>
+        `<tr><td><span class="codigo">${u.cod}</span></td><td>${u.nome}</td><td><button class="btn-red btn-small" onclick="excluirItem('unidade','${u.cod}')">Excluir</button></td></tr>`).join('');
+    document.querySelector('#tabelaSetores tbody').innerHTML = db.setores.map(s =>
+        `<tr><td><span class="codigo">${s.id}</span></td><td>${db.unidades.find(u=>u.cod===s.unidade)?.nome||s.unidade}</td><td>${s.nome}</td><td><button class="btn-red btn-small" onclick="excluirItem('setor','${s.id}')">Excluir</button></td></tr>`).join('');
+    document.querySelector('#tabelaMaquinas tbody').innerHTML = db.maquinas.map(m =>
+        `<tr><td><span class="codigo">${m.id}</span></td><td>${db.unidades.find(u=>u.cod===m.unidade)?.nome||m.unidade}</td><td>${m.setorNome}</td><td>${m.nome}</td><td><button class="btn-red btn-small" onclick="excluirItem('maquina','${m.id}')">Excluir</button></td></tr>`).join('');
+    document.querySelector('#tabelaValores tbody').innerHTML = db.tiposSucata.map(t =>
+        `<tr><td><span class="codigo">${t.id}</span></td><td>${t.tipo}</td><td>R$ ${t.valor.toFixed(2)}</td><td><button class="btn-red btn-small" onclick="excluirItem('valor','${t.id}')">Excluir</button></td></tr>`).join('');
+}
+
+init();
+</script>
+</body>
+</html>
