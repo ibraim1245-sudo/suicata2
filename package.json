@@ -1,37 +1,13 @@
 {
-  "name": "controle-sucata",
-  "version": "2.3.0",
-  "description": "Controle Industrial de Sucata",
+  "name": "pcp",
+  "version": "1.0.0",
+  "description": "Sistema PCP Electron",
   "main": "main.js",
   "scripts": {
-    "build": "electron-builder --win --x64"
+    "start": "electron ."
   },
   "dependencies": {
+    "electron": "^30.0.0",
     "xlsx": "^0.18.5"
-  },
-  "devDependencies": {
-    "electron": "^28.0.0",
-    "electron-builder": "^24.9.1"
-  },
-  "build": {
-    "appId": "com.sucata.controle",
-    "productName": "Controle de Sucata",
-    "directories": {
-      "output": "dist"
-    },
-    "publish": null,
-    "win": {
-      "target": [
-        {
-          "target": "nsis",
-          "arch": ["x64"]
-        }
-      ]
-    },
-    "nsis": {
-      "oneClick": false,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true
-    }
   }
 }
