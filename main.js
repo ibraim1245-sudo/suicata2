@@ -38,6 +38,7 @@ function createWindow() {
   });
   mainWindow.loadFile('index.html');
   Menu.setApplicationMenu(null);
+  // mainWindow.webContents.openDevTools(); // Descomenta se quiser ver erros
 }
 
 app.whenReady().then(createWindow);
