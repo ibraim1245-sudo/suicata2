@@ -22,52 +22,52 @@
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; }
-   .hidden { display: none!important; }
+  .hidden { display: none!important; }
     #login-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-   .login-box { background: var(--surface); padding: 48px; border-radius: var(--radius); box-shadow: var(--shadow-lg); width: 400px; }
-   .login-box h2 { text-align: center; margin-bottom: 32px; font-size: 24px; font-weight: 700; color: var(--text); }
-   .form-group { margin-bottom: 20px; }
-   .form-group label { display: block; margin-bottom: 8px; font-weight: 500; font-size: 13px; color: var(--text-secondary); }
-   .form-group input,.form-group select { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; background: var(--surface); color: var(--text); transition: all 0.2s; }
-   .form-group input:focus,.form-group select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
-   .btn { padding: 10px 18px; border: none; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; font-size: 14px; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
-   .btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-lg); }
-   .btn-primary { background: var(--primary); color: white; width: 100%; }
-   .btn-primary:hover { background: var(--primary-hover); }
-   .btn-success { background: var(--success); color: white; }
-   .btn-danger { background: var(--danger); color: white; }
-   .btn-warning { background: var(--warning); color: white; }
-   .btn-secondary { background: var(--surface-2); color: var(--text); }
-   .btn-sm { padding: 6px 12px; font-size: 13px; }
-   .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow); }
-   .header-left { display: flex; align-items: center; gap: 16px; }
-   .header-left img { height: 36px; max-width: 140px; object-fit: contain; }
-   .header h1 { font-size: 18px; font-weight: 600; color: var(--text); }
-   .user-info { display: flex; align-items: center; gap: 12px; }
-   .user-info span { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
-   .tema-toggle { background: var(--surface-2); border: 1px solid var(--border); color: var(--text); padding: 8px; border-radius: var(--radius-sm); cursor: pointer; font-size: 18px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; }
-   .tema-toggle:hover { background: var(--border); }
-   .container { max-width: 1600px; margin: 0 auto; padding: 24px; }
-   .tabs { display: flex; gap: 4px; margin-bottom: 24px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
-   .tab { padding: 12px 20px; background: transparent; border: none; cursor: pointer; font-weight: 500; font-size: 14px; color: var(--text-secondary); border-bottom: 2px solid transparent; transition: all 0.2s; }
-   .tab:hover { color: var(--text); background: var(--surface-2); }
-   .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
-   .content { background: var(--surface); padding: 32px; border-radius: var(--radius); box-shadow: var(--shadow); }
-   .card { background: var(--surface-2); padding: 24px; border-radius: var(--radius); margin-bottom: 20px; border: 1px solid var(--border); }
-   .card h3 { margin-bottom: 16px; font-size: 16px; font-weight: 600; color: var(--text); }
-   .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
-   .table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 16px; font-size: 13px; }
-   .table th { padding: 12px 16px; text-align: left; font-weight: 600; color: var(--text-secondary); background: var(--surface-2); border-bottom: 1px solid var(--border); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
-   .table td { padding: 14px 16px; border-bottom: 1px solid var(--border); }
-   .table tbody tr:hover { background: var(--surface-2); }
-   .table tbody tr:last-child td { border-bottom: none; }
-   .flex { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-   .chart-container { position: relative; height: 320px; margin-top: 20px; }
-   .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px; }
-   .stat-card { background: var(--surface); border: 1px solid var(--border); padding: 20px; border-radius: var(--radius); }
-   .stat-card h4 { font-size: 13px; color: var(--text-secondary); font-weight: 500; margin-bottom: 8px; }
-   .stat-card p { font-size: 28px; font-weight: 700; color: var(--text); }
-   .logo-preview { max-width: 200px; max-height: 80px; margin-top: 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px; background: white; }
+  .login-box { background: var(--surface); padding: 48px; border-radius: var(--radius); box-shadow: var(--shadow-lg); width: 400px; }
+  .login-box h2 { text-align: center; margin-bottom: 32px; font-size: 24px; font-weight: 700; color: var(--text); }
+  .form-group { margin-bottom: 20px; }
+  .form-group label { display: block; margin-bottom: 8px; font-weight: 500; font-size: 13px; color: var(--text-secondary); }
+  .form-group input,.form-group select { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; background: var(--surface); color: var(--text); transition: all 0.2s; }
+  .form-group input:focus,.form-group select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+  .btn { padding: 10px 18px; border: none; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; font-size: 14px; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+  .btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-lg); }
+  .btn-primary { background: var(--primary); color: white; width: 100%; }
+  .btn-primary:hover { background: var(--primary-hover); }
+  .btn-success { background: var(--success); color: white; }
+  .btn-danger { background: var(--danger); color: white; }
+  .btn-warning { background: var(--warning); color: white; }
+  .btn-secondary { background: var(--surface-2); color: var(--text); }
+  .btn-sm { padding: 6px 12px; font-size: 13px; }
+  .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow); }
+  .header-left { display: flex; align-items: center; gap: 16px; }
+  .header-left img { height: 36px; max-width: 140px; object-fit: contain; }
+  .header h1 { font-size: 18px; font-weight: 600; color: var(--text); }
+  .user-info { display: flex; align-items: center; gap: 12px; }
+  .user-info span { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
+  .tema-toggle { background: var(--surface-2); border: 1px solid var(--border); color: var(--text); padding: 8px; border-radius: var(--radius-sm); cursor: pointer; font-size: 18px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; }
+  .tema-toggle:hover { background: var(--border); }
+  .container { max-width: 1600px; margin: 0 auto; padding: 24px; }
+  .tabs { display: flex; gap: 4px; margin-bottom: 24px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  .tab { padding: 12px 20px; background: transparent; border: none; cursor: pointer; font-weight: 500; font-size: 14px; color: var(--text-secondary); border-bottom: 2px solid transparent; transition: all 0.2s; }
+  .tab:hover { color: var(--text); background: var(--surface-2); }
+  .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+  .content { background: var(--surface); padding: 32px; border-radius: var(--radius); box-shadow: var(--shadow); }
+  .card { background: var(--surface-2); padding: 24px; border-radius: var(--radius); margin-bottom: 20px; border: 1px solid var(--border); }
+  .card h3 { margin-bottom: 16px; font-size: 16px; font-weight: 600; color: var(--text); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+  .table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 16px; font-size: 13px; }
+  .table th { padding: 12px 16px; text-align: left; font-weight: 600; color: var(--text-secondary); background: var(--surface-2); border-bottom: 1px solid var(--border); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .table td { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+  .table tbody tr:hover { background: var(--surface-2); }
+  .table tbody tr:last-child td { border-bottom: none; }
+  .flex { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .chart-container { position: relative; height: 320px; margin-top: 20px; }
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); padding: 20px; border-radius: var(--radius); }
+  .stat-card h4 { font-size: 13px; color: var(--text-secondary); font-weight: 500; margin-bottom: 8px; }
+  .stat-card p { font-size: 28px; font-weight: 700; color: var(--text); }
+  .logo-preview { max-width: 200px; max-height: 80px; margin-top: 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px; background: white; }
   </style>
 </head>
 <body>
@@ -306,4 +306,194 @@
         document.getElementById('login-screen').classList.add('hidden');
         document.getElementById('app').classList.remove('hidden');
         document.getElementById('nomeUsuario').textContent = usuarioLogado + (isAdmin? ' (Admin)' : '');
-        document.getElementById('tabUsuarios').style.display = isAdmin? 'block
+        document.getElementById('tabUsuarios').style.display = isAdmin? 'block' : 'none';
+        await init();
+      } else {
+        document.getElementById('loginErro').textContent = 'Usuário ou senha inválidos';
+      }
+    }
+
+    function logout() { location.reload(); }
+
+    async function init() {
+      configApp = await ipcRenderer.invoke('get-config');
+      compras = configApp.compras || [];
+      aplicarTema(configApp.tema || 'claro');
+      aplicarLogo(configApp.logo);
+      carregarDados();
+      await carregarHistoricoDaPasta();
+      atualizarDataAtual();
+      atualizarInterface();
+      atualizarPastaAtual();
+      atualizarDashboard();
+    }
+
+    function aplicarTema(tema) {
+      document.documentElement.setAttribute('data-tema', tema);
+      document.getElementById('btnTema').textContent = tema === 'escuro'? '☀️' : '🌙';
+      const corTexto = tema === 'escuro'? '#f1f5f9' : '#0f172a';
+      Object.values(charts).forEach(c => {
+        if (c) {
+          c.options.plugins.legend.labels.color = corTexto;
+          if (c.options.scales?.x) c.options.scales.x.ticks.color = corTexto;
+          if (c.options.scales?.x) c.options.scales.x.grid.color = tema === 'escuro'? '#334155' : '#e2e8f0';
+          if (c.options.scales?.y) c.options.scales.y.ticks.color = corTexto;
+          if (c.options.scales?.y) c.options.scales.y.grid.color = tema === 'escuro'? '#334155' : '#e2e8f0';
+          c.update();
+        }
+      });
+    }
+
+    async function alternarTema() {
+      const temaAtual = document.documentElement.getAttribute('data-tema') || 'claro';
+      const novoTema = temaAtual === 'claro'? 'escuro' : 'claro';
+      aplicarTema(novoTema);
+      await ipcRenderer.invoke('salvar-tema', novoTema);
+    }
+
+    function aplicarLogo(caminho) {
+      const img = document.getElementById('logoEmpresa');
+      const preview = document.getElementById('logoPreview');
+      if (caminho && fs.existsSync(caminho)) {
+        img.src = caminho;
+        img.style.display = 'block';
+        if (preview) {
+          preview.src = caminho;
+          preview.classList.remove('hidden');
+        }
+      } else {
+        img.style.display = 'none';
+        if (preview) preview.classList.add('hidden');
+      }
+    }
+
+    async function uploadLogo() {
+      const res = await ipcRenderer.invoke('upload-logo');
+      if (res.sucesso) {
+        configApp.logo = res.caminho;
+        aplicarLogo(res.caminho);
+        alert('Logo atualizado!');
+      }
+    }
+
+    function carregarDados() {
+      const d = localStorage.getItem('sucataDados');
+      if (d) dados = JSON.parse(d);
+    }
+
+    function salvarDados() {
+      localStorage.setItem('sucataDados', JSON.stringify(dados));
+    }
+
+    async function carregarHistoricoDaPasta() {
+      const pasta = await ipcRenderer.invoke('get-pasta');
+      if (!pasta) return;
+      const arquivos = await ipcRenderer.invoke('ler-pasta', pasta);
+      if (!arquivos || arquivos.length === 0) return;
+      const ids = new Set(dados.lancamentos.map(l => l.id));
+      arquivos.forEach(a => { if (!ids.has(a.id)) dados.lancamentos.push(a); });
+      salvarDados();
+    }
+
+    function atualizarDataAtual() {
+      const hoje = new Date().toISOString().split('T')[0];
+      document.getElementById('lanData').value = hoje;
+      document.getElementById('relInicio').value = hoje.substring(0,7)+'-01';
+      document.getElementById('relFim').value = hoje;
+      document.getElementById('compraMes').value = hoje.substring(0,7);
+    }
+
+    function abrirAba(aba) {
+      document.querySelectorAll('.content').forEach(c => c.classList.add('hidden'));
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.getElementById(aba).classList.remove('hidden');
+      event.target.classList.add('active');
+      if (aba === 'dashboard') atualizarDashboard();
+      if (aba === 'lancamento') renderizarTabela();
+      if (aba === 'config') carregarConfig();
+      if (aba === 'usuarios') carregarUsuarios();
+      if (aba === 'compras') renderizarCompras();
+    }
+
+    function atualizarInterface() {
+      carregarUnidades(); carregarTipos(); carregarUnidadesRel(); carregarUnidadesCfg();
+    }
+
+    function atualizarDashboard() {
+      const hoje = new Date();
+      const mesAtual = hoje.getMonth();
+      const anoAtual = hoje.getFullYear();
+      const mesStr = `${anoAtual}-${String(mesAtual+1).padStart(2,'0')}`;
+      
+      const lancMes = dados.lancamentos.filter(l => {
+        const d = new Date(l.data);
+        return d.getMonth() === mesAtual && d.getFullYear() === anoAtual;
+      });
+      const totalKg = lancMes.reduce((s, l) => s + l.peso, 0);
+      const totalValor = lancMes.reduce((s, l) => s + l.valorTotal, 0);
+      document.getElementById('statKg').textContent = totalKg.toFixed(2);
+      document.getElementById('statValor').textContent = 'R$ ' + totalValor.toFixed(2);
+      document.getElementById('statLanc').textContent = lancMes.length;
+
+      const compraMes = compras.find(c => c.mes === mesStr);
+      if (compraMes && compraMes.kg > 0) {
+        const perc = (totalKg / compraMes.kg * 100).toFixed(2);
+        document.getElementById('statPerda').textContent = perc + '%';
+      } else {
+        document.getElementById('statPerda').textContent = '0%';
+      }
+
+      const kgUnidade = {};
+      lancMes.forEach(l => {
+        const nome = dados.unidades.find(u => u.id == l.unidadeId)?.nome || 'N/A';
+        kgUnidade[nome] = (kgUnidade[nome] || 0) + l.peso;
+      });
+      criarGrafico('grafUnidade', 'bar', Object.keys(kgUnidade), Object.values(kgUnidade), 'Kg por Unidade');
+
+      const kgTipo = {};
+      lancMes.forEach(l => {
+        const nome = dados.tipos.find(t => t.id == l.tipoId)?.nome || 'N/A';
+        kgTipo[nome] = (kgTipo[nome] || 0) + l.peso;
+      });
+      criarGrafico('grafTipo', 'doughnut', Object.keys(kgTipo), Object.values(kgTipo), 'Kg por Tipo');
+
+      const kgMaq = {};
+      lancMes.forEach(l => {
+        let nomeMaq = 'N/A';
+        const unid = dados.unidades.find(u => u.id == l.unidadeId);
+        if (unid) {
+          const setor = unid.setores.find(s => s.id == l.setorId);
+          if (setor) nomeMaq = setor.maquinas.find(m => m.id == l.maquinaId)?.nome || 'N/A';
+        }
+        kgMaq[nomeMaq] = (kgMaq[nomeMaq] || 0) + l.peso;
+      });
+      const topMaq = Object.entries(kgMaq).sort((a,b) => b[1]-a[1]).slice(0,10);
+      criarGrafico('grafMaquina', 'bar', topMaq.map(t=>t[0]), topMaq.map(t=>t[1]), 'Top 10 Máquinas');
+
+      const kgSetor = {};
+      lancMes.forEach(l => {
+        let nomeSetor = 'N/A';
+        const unid = dados.unidades.find(u => u.id == l.unidadeId);
+        if (unid) nomeSetor = unid.setores.find(s => s.id == l.setorId)?.nome || 'N/A';
+        kgSetor[nomeSetor] = (kgSetor[nomeSetor] || 0) + l.peso;
+      });
+      criarGrafico('grafSetor', 'bar', Object.keys(kgSetor), Object.values(kgSetor), 'Kg por Setor');
+
+      const meses = {};
+      dados.lancamentos.forEach(l => {
+        const mes = l.data.substring(0,7);
+        meses[mes] = (meses[mes] || 0) + l.peso;
+      });
+      const mesesOrd = Object.keys(meses).sort().slice(-12);
+      criarGrafico('grafTendencia', 'line', mesesOrd, mesesOrd.map(m=>meses[m]), 'Total Sucata Kg');
+
+      if (compraMes) {
+        criarGrafico('grafComparativo', 'bar',
+          ['Aço Comprado', 'Sucata Gerada'],
+          [compraMes.kg, totalKg],
+          `Perda: ${(totalKg/compraMes.kg*100).toFixed(2)}%`
+        );
+      }
+    }
+
+    function criarGrafico(id, tipo, labels, data, titulo
