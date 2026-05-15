@@ -22,60 +22,52 @@
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; }
-    .hidden { display: none!important; }
+   .hidden { display: none!important; }
     #login-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-    .login-box { background: var(--surface); padding: 48px; border-radius: var(--radius); box-shadow: var(--shadow-lg); width: 400px; }
-    .login-box h2 { text-align: center; margin-bottom: 32px; font-size: 24px; font-weight: 700; color: var(--text); }
-    .form-group { margin-bottom: 20px; }
-    .form-group label { display: block; margin-bottom: 8px; font-weight: 500; font-size: 13px; color: var(--text-secondary); }
-    .form-group input,.form-group select { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; background: var(--surface); color: var(--text); transition: all 0.2s; }
-    .form-group input:focus,.form-group select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
-    .btn { padding: 10px 18px; border: none; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; font-size: 14px; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
-    .btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-lg); }
-    .btn-primary { background: var(--primary); color: white; width: 100%; }
-    .btn-primary:hover { background: var(--primary-hover); }
-    .btn-success { background: var(--success); color: white; }
-    .btn-danger { background: var(--danger); color: white; }
-    .btn-warning { background: var(--warning); color: white; }
-    .btn-secondary { background: var(--surface-2); color: var(--text); }
-    .btn-sm { padding: 6px 12px; font-size: 13px; }
-    .btn-icon { padding: 8px; width: 36px; height: 36px; justify-content: center; }
-    .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow); }
-    .header-left { display: flex; align-items: center; gap: 16px; }
-    .header-left img { height: 36px; max-width: 140px; object-fit: contain; }
-    .header h1 { font-size: 18px; font-weight: 600; color: var(--text); }
-    .user-info { display: flex; align-items: center; gap: 12px; }
-    .user-info span { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
-    .tema-toggle { background: var(--surface-2); border: 1px solid var(--border); color: var(--text); padding: 8px; border-radius: var(--radius-sm); cursor: pointer; font-size: 18px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; }
-    .tema-toggle:hover { background: var(--border); }
-    .container { max-width: 1600px; margin: 0 auto; padding: 24px; }
-    .tabs { display: flex; gap: 4px; margin-bottom: 24px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
-    .tab { padding: 12px 20px; background: transparent; border: none; cursor: pointer; font-weight: 500; font-size: 14px; color: var(--text-secondary); border-bottom: 2px solid transparent; transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
-    .tab:hover { color: var(--text); background: var(--surface-2); }
-    .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
-    .content { background: var(--surface); padding: 32px; border-radius: var(--radius); box-shadow: var(--shadow); }
-    .card { background: var(--surface-2); padding: 24px; border-radius: var(--radius); margin-bottom: 20px; border: 1px solid var(--border); }
-    .card h3 { margin-bottom: 16px; font-size: 16px; font-weight: 600; color: var(--text); }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
-    .table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 16px; font-size: 13px; }
-    .table th { padding: 12px 16px; text-align: left; font-weight: 600; color: var(--text-secondary); background: var(--surface-2); border-bottom: 1px solid var(--border); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
-    .table td { padding: 14px 16px; border-bottom: 1px solid var(--border); }
-    .table tbody tr:hover { background: var(--surface-2); }
-    .table tbody tr:last-child td { border-bottom: none; }
-    .flex { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
-    .modal.active { display: flex; }
-    .modal-content { background: var(--surface); padding: 32px; border-radius: var(--radius); width: 520px; max-width: 90%; box-shadow: var(--shadow-lg); }
-    .modal-content h3 { margin-bottom: 20px; font-size: 18px; font-weight: 600; }
-    .chart-container { position: relative; height: 320px; margin-top: 20px; }
-    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px; }
-    .stat-card { background: var(--surface); border: 1px solid var(--border); padding: 20px; border-radius: var(--radius); }
-    .stat-card h4 { font-size: 13px; color: var(--text-secondary); font-weight: 500; margin-bottom: 8px; }
-    .stat-card p { font-size: 28px; font-weight: 700; color: var(--text); }
-    .logo-preview { max-width: 200px; max-height: 80px; margin-top: 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px; background: white; }
-    .badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; }
-    .badge-success { background: rgba(16,185,129,0.1); color: var(--success); }
-    .badge-danger { background: rgba(239,68,68,0.1); color: var(--danger); }
+   .login-box { background: var(--surface); padding: 48px; border-radius: var(--radius); box-shadow: var(--shadow-lg); width: 400px; }
+   .login-box h2 { text-align: center; margin-bottom: 32px; font-size: 24px; font-weight: 700; color: var(--text); }
+   .form-group { margin-bottom: 20px; }
+   .form-group label { display: block; margin-bottom: 8px; font-weight: 500; font-size: 13px; color: var(--text-secondary); }
+   .form-group input,.form-group select { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; background: var(--surface); color: var(--text); transition: all 0.2s; }
+   .form-group input:focus,.form-group select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+   .btn { padding: 10px 18px; border: none; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; font-size: 14px; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+   .btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-lg); }
+   .btn-primary { background: var(--primary); color: white; width: 100%; }
+   .btn-primary:hover { background: var(--primary-hover); }
+   .btn-success { background: var(--success); color: white; }
+   .btn-danger { background: var(--danger); color: white; }
+   .btn-warning { background: var(--warning); color: white; }
+   .btn-secondary { background: var(--surface-2); color: var(--text); }
+   .btn-sm { padding: 6px 12px; font-size: 13px; }
+   .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow); }
+   .header-left { display: flex; align-items: center; gap: 16px; }
+   .header-left img { height: 36px; max-width: 140px; object-fit: contain; }
+   .header h1 { font-size: 18px; font-weight: 600; color: var(--text); }
+   .user-info { display: flex; align-items: center; gap: 12px; }
+   .user-info span { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
+   .tema-toggle { background: var(--surface-2); border: 1px solid var(--border); color: var(--text); padding: 8px; border-radius: var(--radius-sm); cursor: pointer; font-size: 18px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; }
+   .tema-toggle:hover { background: var(--border); }
+   .container { max-width: 1600px; margin: 0 auto; padding: 24px; }
+   .tabs { display: flex; gap: 4px; margin-bottom: 24px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+   .tab { padding: 12px 20px; background: transparent; border: none; cursor: pointer; font-weight: 500; font-size: 14px; color: var(--text-secondary); border-bottom: 2px solid transparent; transition: all 0.2s; }
+   .tab:hover { color: var(--text); background: var(--surface-2); }
+   .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+   .content { background: var(--surface); padding: 32px; border-radius: var(--radius); box-shadow: var(--shadow); }
+   .card { background: var(--surface-2); padding: 24px; border-radius: var(--radius); margin-bottom: 20px; border: 1px solid var(--border); }
+   .card h3 { margin-bottom: 16px; font-size: 16px; font-weight: 600; color: var(--text); }
+   .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+   .table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 16px; font-size: 13px; }
+   .table th { padding: 12px 16px; text-align: left; font-weight: 600; color: var(--text-secondary); background: var(--surface-2); border-bottom: 1px solid var(--border); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+   .table td { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+   .table tbody tr:hover { background: var(--surface-2); }
+   .table tbody tr:last-child td { border-bottom: none; }
+   .flex { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+   .chart-container { position: relative; height: 320px; margin-top: 20px; }
+   .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px; }
+   .stat-card { background: var(--surface); border: 1px solid var(--border); padding: 20px; border-radius: var(--radius); }
+   .stat-card h4 { font-size: 13px; color: var(--text-secondary); font-weight: 500; margin-bottom: 8px; }
+   .stat-card p { font-size: 28px; font-weight: 700; color: var(--text); }
+   .logo-preview { max-width: 200px; max-height: 80px; margin-top: 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px; background: white; }
   </style>
 </head>
 <body>
@@ -106,51 +98,26 @@
         <span id="nomeUsuario"></span>
         <button class="btn btn-secondary btn-sm" onclick="logout()">Sair</button>
       </div>
+    </div>
     <div class="container">
       <div class="tabs">
-        <button class="tab active" onclick="abrirAba('dashboard')">
-          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0zM4.5 7.5a.5.5 0 0 0 0 1h5.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H4.5z"/></svg>
-          Dashboard
-        </button>
-        <button class="tab" onclick="abrirAba('lancamento')">
-          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 16z"/><path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/></svg>
-          Lançamento
-        </button>
-        <button class="tab" onclick="abrirAba('compras')">
-          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM3.102 4l1.313 7h8.17l1.313-7H3.102zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/></svg>
-          Compras
-        </button>
-        <button class="tab" onclick="abrirAba('relatorios')">
-          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2zm15 2h-4v3h4V4zm0 4h-4v3h4V8zm0 4h-4v3h4v-3zM5 4H1v3h4V4zm0 4H1v3h4V8zm0 4H1v3h4v-3z"/></svg>
-          Relatórios
-        </button>
-        <button class="tab" onclick="abrirAba('config')">
-          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 0 0 1-4.492 0z"/><path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319z"/></svg>
-          Config Geral
-        </button>
-        <button class="tab" onclick="abrirAba('configuracoes')">
-          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zm3.5 7.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5z"/></svg>
-          Configurações
-        </button>
-        <button class="tab" id="tabUsuarios" onclick="abrirAba('usuarios')">
-          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M5.216 14A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216zM4.5 8a2.5 2.5 0 1 0 0-5 2.5 0 0 0 0 5z"/></svg>
-          Usuários
-        </button>
+        <button class="tab active" onclick="abrirAba('dashboard')">Dashboard</button>
+        <button class="tab" onclick="abrirAba('lancamento')">Lançamento</button>
+        <button class="tab" onclick="abrirAba('compras')">Compras</button>
+        <button class="tab" onclick="abrirAba('relatorios')">Relatórios</button>
+        <button class="tab" onclick="abrirAba('config')">Config Geral</button>
+        <button class="tab" onclick="abrirAba('configuracoes')">Configurações</button>
+        <button class="tab" id="tabUsuarios" onclick="abrirAba('usuarios')">Usuários</button>
       </div>
 
       <div id="dashboard" class="content">
         <div class="flex" style="justify-content:space-between;margin-bottom:24px;">
           <h2 style="font-size:20px;font-weight:700;">Dashboard</h2>
           <div class="flex">
-            <button class="btn btn-success btn-sm" onclick="exportarDashboardExcel()">
-              <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/></svg>
-              Excel
-            </button>
-            <button class="btn btn-primary btn-sm" onclick="enviarDashboardEmail()">
-              <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2zm13 2.383-4.708 2.825L15 11.105V5.383zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741zM1 11.105l4.708-2.897L1 5.383v5.722z"/></svg>
-              Email
-            </button>
+            <button class="btn btn-success btn-sm" onclick="exportarDashboardExcel()">Excel</button>
+            <button class="btn btn-primary btn-sm" onclick="enviarDashboardEmail()">Email</button>
           </div>
+        </div>
         <div class="stat-grid">
           <div class="stat-card"><h4>Total Kg Mês</h4><p id="statKg">0</p></div>
           <div class="stat-card"><h4>Valor Total Mês</h4><p id="statValor">R$ 0</p></div>
@@ -182,6 +149,7 @@
             <button class="btn btn-primary" onclick="salvarLancamento()" id="btnSalvarLan">Salvar Lançamento</button>
             <button class="btn btn-secondary hidden" onclick="cancelarEdicaoLan()" id="btnCancelarLan">Cancelar</button>
           </div>
+        </div>
         <div class="card">
           <h3>Histórico</h3>
           <table class="table" id="tabelaLanc">
@@ -222,6 +190,7 @@
             <button class="btn btn-success btn-sm" onclick="exportarRelatorioExcel()">Exportar Excel</button>
             <button class="btn btn-warning btn-sm" onclick="enviarRelatorioEmail()">Enviar Email</button>
           </div>
+        </div>
         <div class="card">
           <table class="table" id="tabelaRel">
             <thead><tr><th>Data</th><th>Unidade</th><th>Setor</th><th>Máquina</th><th>Tipo</th><th>Kg</th><th>R$/Kg</th><th>Total</th><th>Usuário</th></tr></thead>
@@ -301,4 +270,40 @@
           <div class="grid">
             <div class="form-group"><label>Usuário</label><input type="text" id="novoUsuario" placeholder="nome.sobrenome"></div>
             <div class="form-group"><label>Senha</label><input type="password" id="novaSenhaUser" placeholder="Senha inicial"></div>
-            <div class="form-group"><label>Admin?</label><select id="novoAdmin"><option value="false">Não</option><option value
+            <div class="form-group"><label>Admin?</label><select id="novoAdmin"><option value="false">Não</option><option value="true">Sim</option></select></div>
+          </div>
+          <button class="btn btn-success" onclick="cadastrarUsuario()">Cadastrar</button>
+        </div>
+        <div class="card">
+          <h3>Usuários Cadastrados</h3>
+          <table class="table" id="tabelaUsers">
+            <thead><tr><th>Usuário</th><th>Admin</th><th>Ações</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const { ipcRenderer } = require('electron');
+    const fs = require('fs');
+    let dados = { matriz: '', unidades: [], tipos: [], lancamentos: [] };
+    let compras = [];
+    let usuarioLogado = null;
+    let isAdmin = false;
+    let editandoId = null;
+    let charts = {};
+    let configApp = {};
+
+    async function fazerLogin() {
+      const u = document.getElementById('loginUsuario').value;
+      const s = document.getElementById('loginSenha').value;
+      const res = await ipcRenderer.invoke('login', u, s);
+      if (res.sucesso) {
+        usuarioLogado = res.usuario;
+        isAdmin = res.admin;
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('app').classList.remove('hidden');
+        document.getElementById('nomeUsuario').textContent = usuarioLogado + (isAdmin? ' (Admin)' : '');
+        document.getElementById('tabUsuarios').style.display = isAdmin? 'block
