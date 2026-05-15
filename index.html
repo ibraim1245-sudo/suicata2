@@ -1,608 +1,396 @@
-const { app, BrowserWindow, ipcMain, dialog, Menu, shell } = require('electron');
-const fs = require('fs');
-const path = require('path');
-const XLSX = require('xlsx');
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Controle Industrial de Sucata</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #2563eb; --primary-hover: #1d4ed8; --success: #10b981;
+      --danger: #ef4444; --warning: #f59e0b; --bg: #f8fafc;
+      --surface: #ffffff; --surface-2: #f1f5f9; --text: #0f172a;
+      --text-secondary: #64748b; --border: #e2e8f0; --shadow: 0 1px 3px 0 rgba(0,0,0.1);
+      --shadow-lg: 0 10px 15px -3px rgba(0,0,0.1); --radius: 12px; --radius-sm: 8px;
+    }
+    [data-tema="escuro"] {
+      --primary: #3b82f6; --primary-hover: #2563eb; --success: #34d399;
+      --danger: #f87171; --warning: #fbbf24; --bg: #0f172a;
+      --surface: #1e293b; --surface-2: #334155; --text: #f1f5f9;
+      --text-secondary: #94a3b8; --border: #334155; --shadow: 0 1px 3px 0 rgba(0,0,0,0.3);
+      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.3);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; }
+.hidden { display: none!important; }
+    #login-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+.login-box { background: var(--surface); padding: 48px; border-radius: var(--radius); box-shadow: var(--shadow-lg); width: 400px; }
+.login-box h2 { text-align: center; margin-bottom: 32px; font-size: 24px; font-weight: 700; color: var(--text); }
+.form-group { margin-bottom: 20px; }
+.form-group label { display: block; margin-bottom: 8px; font-weight: 500; font-size: 13px; color: var(--text-secondary); }
+.form-group input,.form-group select { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; background: var(--surface); color: var(--text); transition: all 0.2s; }
+.form-group input:focus,.form-group select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+.btn { padding: 10px 18px; border: none; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; font-size: 14px; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+.btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-lg); }
+.btn-primary { background: var(--primary); color: white; width: 100%; }
+.btn-primary:hover { background: var(--primary-hover); }
+.btn-success { background: var(--success); color: white; }
+.btn-danger { background: var(--danger); color: white; }
+.btn-warning { background: var(--warning); color: white; }
+.btn-secondary { background: var(--surface-2); color: var(--text); }
+.btn-sm { padding: 6px 12px; font-size: 13px; }
+.header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow); }
+.header-left { display: flex; align-items: center; gap: 16px; }
+.header-left img { height: 36px; max-width: 140px; object-fit: contain; }
+.header h1 { font-size: 18px; font-weight: 600; color: var(--text); }
+.user-info { display: flex; align-items: center; gap: 12px; }
+.user-info span { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
+.tema-toggle { background: var(--surface-2); border: 1px solid var(--border); color: var(--text); padding: 8px; border-radius: var(--radius-sm); cursor: pointer; font-size: 18px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; }
+.tema-toggle:hover { background: var(--border); }
+.container { max-width: 1600px; margin: 0 auto; padding: 24px; }
+.tabs { display: flex; gap: 4px; margin-bottom: 24px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+.tab { padding: 12px 20px; background: transparent; border: none; cursor: pointer; font-weight: 500; font-size: 14px; color: var(--text-secondary); border-bottom: 2px solid transparent; transition: all 0.2s; }
+.tab:hover { color: var(--text); background: var(--surface-2); }
+.tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+.content { background: var(--surface); padding: 32px; border-radius: var(--radius); box-shadow: var(--shadow); }
+.card { background: var(--surface-2); padding: 24px; border-radius: var(--radius); margin-bottom: 20px; border: 1px solid var(--border); }
+.card h3 { margin-bottom: 16px; font-size: 16px; font-weight: 600; color: var(--text); }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+.table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 16px; font-size: 13px; }
+.table th { padding: 12px 16px; text-align: left; font-weight: 600; color: var(--text-secondary); background: var(--surface-2); border-bottom: 1px solid var(--border); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+.table td { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+.table tbody tr:hover { background: var(--surface-2); }
+.table tbody tr:last-child td { border-bottom: none; }
+.flex { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.chart-container { position: relative; height: 320px; margin-top: 20px; }
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.stat-card { background: var(--surface); border: 1px solid var(--border); padding: 20px; border-radius: var(--radius); }
+.stat-card h4 { font-size: 13px; color: var(--text-secondary); font-weight: 500; margin-bottom: 8px; }
+.stat-card p { font-size: 28px; font-weight: 700; color: var(--text); }
+.logo-preview { max-width: 200px; max-height: 80px; margin-top: 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px; background: white; }
+  </style>
+</head>
+<body>
+  <div id="login-screen">
+    <div class="login-box">
+      <h2>Controle de Sucata</h2>
+      <div class="form-group">
+        <label>Usuário</label>
+        <input type="text" id="loginUsuario" value="admin" placeholder="Digite seu usuário">
+      </div>
+      <div class="form-group">
+        <label>Senha</label>
+        <input type="password" id="loginSenha" value="admin" placeholder="Digite sua senha">
+      </div>
+      <button class="btn btn-primary" onclick="fazerLogin()">Entrar</button>
+      <p id="loginErro" style="color:var(--danger);margin-top:12px;text-align:center;font-size:13px;"></p>
+    </div>
+  </div>
 
-app.setName('PCP');
+  <div id="app" class="hidden">
+    <div class="header">
+      <div class="header-left">
+        <img id="logoEmpresa" src="" alt="Logo" style="display:none;">
+        <h1>Controle Industrial de Sucata</h1>
+      </div>
+      <div class="user-info">
+        <button class="tema-toggle" onclick="alternarTema()" id="btnTema">🌙</button>
+        <span id="nomeUsuario"></span>
+        <button class="btn btn-secondary btn-sm" onclick="logout()">Sair</button>
+      </div>
+    <div class="container">
+      <div class="tabs">
+        <button class="tab active" onclick="abrirAba('dashboard', this)">Dashboard</button>
+        <button class="tab" onclick="abrirAba('lancamento', this)">Lançamento</button>
+        <button class="tab" onclick="abrirAba('compras', this)">Compras</button>
+        <button class="tab" onclick="abrirAba('relatorios', this)">Relatórios</button>
+        <button class="tab" onclick="abrirAba('config', this)">Config Geral</button>
+        <button class="tab" onclick="abrirAba('configuracoes', this)">Configurações</button>
+        <button class="tab" id="tabUsuarios" onclick="abrirAba('usuarios', this)">Usuários</button>
+      </div>
 
-const configPath = path.join(app.getPath('userData'), 'config.json');
+      <div id="dashboard" class="content">
+        <div class="flex" style="justify-content:space-between;margin-bottom:24px;">
+          <h2 style="font-size:20px;font-weight:700;">Dashboard</h2>
+          <div class="flex">
+            <button class="btn btn-success btn-sm" onclick="exportarDashboardExcel()">Excel</button>
+            <button class="btn btn-primary btn-sm" onclick="enviarDashboardEmail()">Email</button>
+          </div>
+        </div>
+        <div class="stat-grid">
+          <div class="stat-card"><h4>Total Kg Mês</h4><p id="statKg">0</p></div>
+          <div class="stat-card"><h4>Valor Total Mês</h4><p id="statValor">R$ 0</p></div>
+          <div class="stat-card"><h4>Lançamentos Mês</h4><p id="statLanc">0</p></div>
+          <div class="stat-card"><h4>% Perda Mensal</h4><p id="statPerda">0%</p></div>
+        </div>
+        <div class="grid">
+          <div class="card"><h3>Kg por Unidade - Mês</h3><div class="chart-container"><canvas id="grafUnidade"></canvas></div></div>
+          <div class="card"><h3>Kg por Tipo Sucata</h3><div class="chart-container"><canvas id="grafTipo"></canvas></div></div>
+          <div class="card"><h3>Top 10 Máquinas - Mês</h3><div class="chart-container"><canvas id="grafMaquina"></canvas></div></div>
+          <div class="card"><h3>Kg por Setor - Mês</h3><div class="chart-container"><canvas id="grafSetor"></canvas></div></div>
+        </div>
+        <div class="card"><h3>Sucata x Aço Comprado Mensal</h3><div class="chart-container"><canvas id="grafComparativo"></canvas></div></div>
+        <div class="card"><h3>Tendência Total Sucata - 12 Meses</h3><div class="chart-container"><canvas id="grafTendencia"></canvas></div></div>
+      </div>
 
-function configPadrao() {
-  return {
-    usuarios: [
-      {
-        usuario: 'admin',
-        senha: 'admin',
-        admin: true
+      <div id="lancamento" class="content hidden">
+        <h2 style="font-size:20px;font-weight:700;margin-bottom:24px;">Lançamento de Sucata</h2>
+        <div class="card">
+          <div class="grid">
+            <div class="form-group"><label>Data</label><input type="date" id="lanData"></div>
+            <div class="form-group"><label>Unidade</label><select id="lanUnidade" onchange="carregarSetores()"></select></div>
+            <div class="form-group"><label>Setor</label><select id="lanSetor" onchange="carregarMaquinas()"></select></div>
+            <div class="form-group"><label>Máquina</label><select id="lanMaquina"></select></div>
+            <div class="form-group"><label>Tipo Sucata</label><select id="lanTipo"></select></div>
+            <div class="form-group"><label>Peso (Kg)</label><input type="number" id="lanPeso" step="0.01" placeholder="0.00"></div>
+          </div>
+          <div class="flex">
+            <button class="btn btn-primary" onclick="salvarLancamento()" id="btnSalvarLan">Salvar Lançamento</button>
+            <button class="btn btn-secondary hidden" onclick="cancelarEdicaoLan()" id="btnCancelarLan">Cancelar</button>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Histórico</h3>
+          <table class="table" id="tabelaLanc">
+            <thead><tr><th>Data</th><th>Unidade</th><th>Setor</th><th>Máquina</th><th>Tipo</th><th>Kg</th><th>Valor</th><th>Usuário</th><th>Ações</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="compras" class="content hidden">
+        <h2 style="font-size:20px;font-weight:700;margin-bottom:24px;">Lançamento de Aço Comprado</h2>
+        <div class="card">
+          <div class="grid">
+            <div class="form-group"><label>Mês/Ano</label><input type="month" id="compraMes"></div>
+            <div class="form-group"><label>Total Kg Comprado</label><input type="number" id="compraKg" step="0.01" placeholder="0.00"></div>
+          </div>
+          <button class="btn btn-primary" onclick="salvarCompra()">Salvar Compra</button>
+        </div>
+        <div class="card">
+          <h3>Histórico de Compras</h3>
+          <table class="table" id="tabelaCompras">
+            <thead><tr><th>Mês</th><th>Kg Comprado</th><th>% Sucata</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="relatorios" class="content hidden">
+        <h2 style="font-size:20px;font-weight:700;margin-bottom:24px;">Relatórios</h2>
+        <div class="card">
+          <div class="grid">
+            <div class="form-group"><label>Data Início</label><input type="date" id="relInicio"></div>
+            <div class="form-group"><label>Data Fim</label><input type="date" id="relFim"></div>
+            <div class="form-group"><label>Unidade</label><select id="relUnidade"><option value="">Todas</option></select></div>
+          </div>
+          <div class="flex">
+            <button class="btn btn-primary btn-sm" onclick="gerarRelatorio()">Filtrar</button>
+            <button class="btn btn-success btn-sm" onclick="exportarRelatorioExcel()">Exportar Excel</button>
+            <button class="btn btn-warning btn-sm" onclick="enviarRelatorioEmail()">Enviar Email</button>
+          </div>
+        </div>
+        <div class="card">
+          <table class="table" id="tabelaRel">
+            <thead><tr><th>Data</th><th>Unidade</th><th>Setor</th><th>Máquina</th><th>Tipo</th><th>Kg</th><th>R$/Kg</th><th>Total</th><th>Usuário</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="config" class="content hidden">
+        <h2 style="font-size:20px;font-weight:700;margin-bottom:24px;">Configuração Geral</h2>
+        <div class="grid">
+          <div class="card">
+            <h3>Matriz</h3>
+            <div class="form-group"><label>Nome</label><input type="text" id="cfgMatriz" placeholder="Nome da empresa"></div>
+            <button class="btn btn-primary btn-sm" onclick="salvarMatriz()">Salvar</button>
+          </div>
+          <div class="card">
+            <h3>Unidades</h3>
+            <div class="flex"><input type="text" id="novaUnidade" placeholder="Nome da unidade"><button class="btn btn-success btn-sm" onclick="addUnidade()">Adicionar</button></div>
+            <table class="table" id="tabelaUnid"><tbody></tbody></table>
+          </div>
+          <div class="card">
+            <h3>Tipos de Sucata</h3>
+            <div class="flex">
+              <input type="text" id="novoTipo" placeholder="Nome" style="flex:1;">
+              <input type="number" id="novoValor" placeholder="R$/Kg" step="0.01" style="width:120px;">
+              <button class="btn btn-success btn-sm" onclick="addTipo()">Adicionar</button>
+            </div>
+            <table class="table" id="tabelaTipo"><tbody></tbody></table>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Setores e Máquinas</h3>
+          <div class="form-group"><label>Unidade</label><select id="cfgUnidadeSet" onchange="carregarSetoresCfg()"></select></div>
+          <div class="grid">
+            <div>
+              <h4 style="font-size:14px;margin-bottom:12px;font-weight:600;">Setores</h4>
+              <div class="flex"><input type="text" id="novoSetor" placeholder="Nome setor"><button class="btn btn-success btn-sm" onclick="addSetor()">Adicionar</button></div>
+              <table class="table" id="tabelaSetor"><tbody></tbody></table>
+            </div>
+            <div>
+              <h4 style="font-size:14px;margin-bottom:12px;font-weight:600;">Máquinas</h4>
+              <div class="form-group"><label>Setor</label><select id="cfgSetorMaq" onchange="carregarMaquinasCfg()"></select></div>
+              <div class="flex"><input type="text" id="novaMaquina" placeholder="Nome máquina"><button class="btn btn-success btn-sm" onclick="addMaquina()">Adicionar</button></div>
+              <table class="table" id="tabelaMaq"><tbody></tbody></table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="configuracoes" class="content hidden">
+        <h2 style="font-size:20px;font-weight:700;margin-bottom:24px;">Configurações do Sistema</h2>
+        <div class="grid">
+          <div class="card">
+            <h3>Logo da Empresa</h3>
+            <img id="logoPreview" class="logo-preview hidden" src="">
+            <button class="btn btn-primary btn-sm" onclick="uploadLogo()">Escolher Logo</button>
+          </div>
+          <div class="card">
+            <h3>Pasta de Backup</h3>
+            <p id="pastaAtual" style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;">Nenhuma pasta selecionada</p>
+            <button class="btn btn-primary btn-sm" onclick="escolherPasta()">Escolher/Trocar Pasta</button>
+          </div>
+          <div class="card">
+            <h3>Alterar Minha Senha</h3>
+            <div class="form-group"><label>Senha Atual</label><input type="password" id="senhaAtual"></div>
+            <div class="form-group"><label>Nova Senha</label><input type="password" id="senhaNova"></div>
+            <button class="btn btn-warning btn-sm" onclick="alterarMinhaSenha()">Alterar Senha</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="usuarios" class="content hidden">
+        <h2 style="font-size:20px;font-weight:700;margin-bottom:24px;">Gestão de Usuários</h2>
+        <div class="card">
+          <h3>Cadastrar Novo Usuário</h3>
+          <div class="grid">
+            <div class="form-group"><label>Usuário</label><input type="text" id="novoUsuario" placeholder="nome.sobrenome"></div>
+            <div class="form-group"><label>Senha</label><input type="password" id="novaSenhaUser" placeholder="Senha inicial"></div>
+            <div class="form-group"><label>Admin?</label><select id="novoAdmin"><option value="false">Não</option><option value="true">Sim</option></select></div>
+          </div>
+          <button class="btn btn-success" onclick="cadastrarUsuario()">Cadastrar</button>
+        </div>
+        <div class="card">
+          <h3>Usuários Cadastrados</h3>
+          <table class="table" id="tabelaUsers">
+            <thead><tr><th>Usuário</th><th>Admin</th><th>Ações</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const { ipcRenderer } = require('electron');
+    const fs = require('fs');
+    let dados = { matriz: '', unidades: [], tipos: [], lancamentos: [] };
+    let compras = [];
+    let usuarioLogado = null;
+    let isAdmin = false;
+    let editandoId = null;
+    let charts = {};
+    let configApp = {};
+
+    async function fazerLogin() {
+      const u = document.getElementById('loginUsuario').value;
+      const s = document.getElementById('loginSenha').value;
+      const res = await ipcRenderer.invoke('login', u, s);
+      if (res.sucesso) {
+        usuarioLogado = res.usuario;
+        isAdmin = res.admin;
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('app').classList.remove('hidden');
+        document.getElementById('nomeUsuario').textContent = usuarioLogado + (isAdmin? ' (Admin)' : '');
+        document.getElementById('tabUsuarios').style.display = isAdmin? 'block' : 'none';
+        await init();
+      } else {
+        document.getElementById('loginErro').textContent = 'Usuário ou senha inválidos';
       }
-    ],
-    pastaBackup: null,
-    tema: 'claro',
-    logo: null,
-    compras: []
-  };
-}
-
-function lerConfig() {
-  try {
-
-    if (!fs.existsSync(configPath)) {
-      const config = configPadrao();
-      salvarConfig(config);
-      return config;
     }
 
-    const conteudo = fs.readFileSync(configPath, 'utf8');
+    function logout() { location.reload(); }
 
-    if (!conteudo || conteudo.trim() === '') {
-      const config = configPadrao();
-      salvarConfig(config);
-      return config;
+    async function init() {
+      configApp = await ipcRenderer.invoke('get-config');
+      compras = configApp.compras || [];
+      aplicarTema(configApp.tema || 'claro');
+      aplicarLogo(configApp.logo);
+      carregarDados();
+      await carregarHistoricoDaPasta();
+      atualizarDataAtual();
+      atualizarInterface();
+      atualizarPastaAtual();
+      atualizarDashboard();
     }
 
-    return JSON.parse(conteudo);
-
-  } catch (e) {
-
-    console.error('Erro ao ler config:', e);
-
-    const config = configPadrao();
-
-    try {
-      salvarConfig(config);
-    } catch (err) {
-      console.error('Erro ao recriar config:', err);
-    }
-
-    return config;
-  }
-}
-
-function salvarConfig(config) {
-  try {
-
-    fs.mkdirSync(path.dirname(configPath), { recursive: true });
-
-    fs.writeFileSync(
-      configPath,
-      JSON.stringify(config, null, 2),
-      'utf8'
-    );
-
-  } catch (e) {
-    console.error('Erro ao salvar config:', e);
-  }
-}
-
-let mainWindow;
-
-function createWindow() {
-
-  mainWindow = new BrowserWindow({
-    width: 1500,
-    height: 950,
-    autoHideMenuBar: true,
-
-    webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false
-    }
-  });
-
-  mainWindow.loadFile('index.html');
-
-  // DESCOMENTE PARA DEBUG
-  mainWindow.webContents.openDevTools();
-
-  Menu.setApplicationMenu(null);
-
-  mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
-    console.error('Erro ao carregar janela:', errorCode, errorDescription);
-  });
-
-  mainWindow.on('closed', () => {
-    mainWindow = null;
-  });
-}
-
-app.whenReady().then(() => {
-
-  lerConfig();
-
-  createWindow();
-
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow();
-    }
-  });
-
-});
-
-ipcMain.handle('login', async (event, user, pass) => {
-
-  try {
-
-    const config = lerConfig();
-
-    const usuario = config.usuarios.find(
-      u =>
-        String(u.usuario).trim() === String(user).trim() &&
-        String(u.senha).trim() === String(pass).trim()
-    );
-
-    if (usuario) {
-
-      return {
-        sucesso: true,
-        usuario: usuario.usuario,
-        admin: usuario.admin || false
-      };
-
-    }
-
-    return {
-      sucesso: false,
-      erro: 'Usuário ou senha inválidos'
-    };
-
-  } catch (e) {
-
-    console.error('Erro login:', e);
-
-    return {
-      sucesso: false,
-      erro: e.message
-    };
-  }
-});
-
-ipcMain.handle('salvar-usuarios', async (event, usuarios) => {
-
-  try {
-
-    const config = lerConfig();
-
-    config.usuarios = usuarios;
-
-    salvarConfig(config);
-
-    return { sucesso: true };
-
-  } catch (e) {
-
-    console.error(e);
-
-    return {
-      sucesso: false,
-      erro: e.message
-    };
-  }
-});
-
-ipcMain.handle('get-usuarios', async () => {
-
-  try {
-    return lerConfig().usuarios || [];
-  } catch (e) {
-    console.error(e);
-    return [];
-  }
-
-});
-
-ipcMain.handle('get-config', async () => {
-
-  try {
-    return lerConfig();
-  } catch (e) {
-    console.error(e);
-    return configPadrao();
-  }
-
-});
-
-ipcMain.handle('salvar-tema', async (event, tema) => {
-
-  try {
-
-    const config = lerConfig();
-
-    config.tema = tema;
-
-    salvarConfig(config);
-
-    return { sucesso: true };
-
-  } catch (e) {
-
-    console.error(e);
-
-    return {
-      sucesso: false,
-      erro: e.message
-    };
-  }
-});
-
-ipcMain.handle('upload-logo', async () => {
-
-  try {
-
-    const { canceled, filePaths } = await dialog.showOpenDialog({
-      title: 'Escolher Logo da Empresa',
-      filters: [
-        {
-          name: 'Imagens',
-          extensions: ['png', 'jpg', 'jpeg']
+    function aplicarTema(tema) {
+      document.documentElement.setAttribute('data-tema', tema);
+      document.getElementById('btnTema').textContent = tema === 'escuro'? '☀️' : '🌙';
+      const corTexto = tema === 'escuro'? '#f1f5f9' : '#0f172a';
+      const corGrid = tema === 'escuro'? '#334155' : '#e2e8f0';
+      Object.values(charts).forEach(c => {
+        if (c) {
+          c.options.plugins.legend.labels.color = corTexto;
+          if (c.options.scales?.x) {
+            c.options.scales.x.ticks.color = corTexto;
+            c.options.scales.x.grid.color = corGrid;
+          }
+          if (c.options.scales?.y) {
+            c.options.scales.y.ticks.color = corTexto;
+            c.options.scales.y.grid.color = corGrid;
+          }
+          c.update();
         }
-      ],
-      properties: ['openFile']
-    });
-
-    if (canceled || !filePaths.length) {
-      return { sucesso: false };
+      });
     }
 
-    const logoPath = filePaths[0];
-
-    const ext = path.extname(logoPath);
-
-    const dest = path.join(
-      app.getPath('userData'),
-      'logo' + ext
-    );
-
-    fs.copyFileSync(logoPath, dest);
-
-    const config = lerConfig();
-
-    config.logo = dest;
-
-    salvarConfig(config);
-
-    return {
-      sucesso: true,
-      caminho: dest
-    };
-
-  } catch (e) {
-
-    console.error(e);
-
-    return {
-      sucesso: false,
-      erro: e.message
-    };
-  }
-});
-
-ipcMain.handle('salvar-compra', async (event, compra) => {
-
-  try {
-
-    const config = lerConfig();
-
-    if (!config.compras) {
-      config.compras = [];
+    async function alternarTema() {
+      const temaAtual = document.documentElement.getAttribute('data-tema') || 'claro';
+      const novoTema = temaAtual === 'claro'? 'escuro' : 'claro';
+      aplicarTema(novoTema);
+      await ipcRenderer.invoke('salvar-tema', novoTema);
     }
 
-    const idx = config.compras.findIndex(
-      c => c.mes === compra.mes
-    );
-
-    if (idx >= 0) {
-      config.compras[idx] = compra;
-    } else {
-      config.compras.push(compra);
-    }
-
-    salvarConfig(config);
-
-    return { sucesso: true };
-
-  } catch (e) {
-
-    console.error(e);
-
-    return {
-      sucesso: false,
-      erro: e.message
-    };
-  }
-});
-
-ipcMain.handle('alterar-senha', async (event, usuario, senhaAtual, novaSenha) => {
-
-  try {
-
-    const config = lerConfig();
-
-    const user = config.usuarios.find(
-      u => u.usuario === usuario
-    );
-
-    if (!user) {
-      return {
-        sucesso: false,
-        erro: 'Usuário não encontrado'
-      };
-    }
-
-    if (user.senha !== senhaAtual) {
-      return {
-        sucesso: false,
-        erro: 'Senha atual incorreta'
-      };
-    }
-
-    user.senha = novaSenha;
-
-    salvarConfig(config);
-
-    return { sucesso: true };
-
-  } catch (e) {
-
-    console.error(e);
-
-    return {
-      sucesso: false,
-      erro: e.message
-    };
-  }
-});
-
-ipcMain.handle('alterar-senha-admin', async (event, usuario, novaSenha) => {
-
-  try {
-
-    const config = lerConfig();
-
-    const user = config.usuarios.find(
-      u => u.usuario === usuario
-    );
-
-    if (!user) {
-      return {
-        sucesso: false,
-        erro: 'Usuário não encontrado'
-      };
-    }
-
-    user.senha = novaSenha;
-
-    salvarConfig(config);
-
-    return { sucesso: true };
-
-  } catch (e) {
-
-    console.error(e);
-
-    return {
-      sucesso: false,
-      erro: e.message
-    };
-  }
-});
-
-ipcMain.handle('escolher-pasta', async () => {
-
-  try {
-
-    const { canceled, filePaths } = await dialog.showOpenDialog({
-      title: 'Escolha a pasta para salvar os lançamentos',
-      properties: ['openDirectory', 'createDirectory']
-    });
-
-    const config = lerConfig();
-
-    if (!canceled && filePaths[0]) {
-
-      config.pastaBackup = filePaths[0];
-
-      salvarConfig(config);
-
-      return filePaths[0];
-    }
-
-    return config.pastaBackup || null;
-
-  } catch (e) {
-
-    console.error(e);
-
-    return null;
-  }
-});
-
-ipcMain.handle('get-pasta', async () => {
-
-  try {
-    return lerConfig().pastaBackup || null;
-  } catch (e) {
-    console.error(e);
-    return null;
-  }
-
-});
-
-ipcMain.handle('salvar-backup', async (event, dados) => {
-
-  try {
-
-    const config = lerConfig();
-
-    let pasta = config.pastaBackup;
-
-    if (!pasta) {
-
-      return {
-        sucesso: false,
-        erro: 'Pasta não configurada'
-      };
-    }
-
-    if (!fs.existsSync(pasta)) {
-      fs.mkdirSync(pasta, { recursive: true });
-    }
-
-    fs.writeFileSync(
-      path.join(pasta, dados.nome),
-      dados.conteudo,
-      'utf8'
-    );
-
-    return {
-      sucesso: true,
-      pasta
-    };
-
-  } catch (e) {
-
-    console.error(e);
-
-    return {
-      sucesso: false,
-      erro: e.message
-    };
-  }
-});
-
-ipcMain.handle('ler-pasta', async (event, pasta) => {
-
-  try {
-
-    if (!fs.existsSync(pasta)) {
-      return [];
-    }
-
-    const arquivos = fs.readdirSync(pasta)
-      .filter(
-        f =>
-          f.startsWith('LAN-') &&
-          f.endsWith('.json')
-      );
-
-    const lancamentos = [];
-
-    arquivos.forEach(arquivo => {
-
-      try {
-
-        const conteudo = fs.readFileSync(
-          path.join(pasta, arquivo),
-          'utf8'
-        );
-
-        const json = JSON.parse(conteudo);
-
-        if (json.id) {
-          lancamentos.push(json);
+    function aplicarLogo(caminho) {
+      const img = document.getElementById('logoEmpresa');
+      const preview = document.getElementById('logoPreview');
+      if (caminho && fs.existsSync(caminho)) {
+        img.src = caminho;
+        img.style.display = 'block';
+        if (preview) {
+          preview.src = caminho;
+          preview.classList.remove('hidden');
         }
-
-      } catch (e) {
-        console.error('Erro arquivo:', arquivo, e);
+      } else {
+        img.style.display = 'none';
+        if (preview) preview.classList.add('hidden');
       }
-
-    });
-
-    return lancamentos;
-
-  } catch (e) {
-
-    console.error(e);
-
-    return [];
-  }
-});
-
-ipcMain.handle('exportar-excel', async (event, dados, nomeArquivo) => {
-
-  try {
-
-    const { canceled, filePath } = await dialog.showSaveDialog({
-      title: 'Salvar Excel',
-      defaultPath: nomeArquivo || 'relatorio.xlsx',
-      filters: [
-        {
-          name: 'Excel',
-          extensions: ['xlsx']
-        }
-      ]
-    });
-
-    if (canceled || !filePath) {
-      return { sucesso: false };
     }
 
-    const ws = XLSX.utils.json_to_sheet(dados);
-
-    const wb = XLSX.utils.book_new();
-
-    XLSX.utils.book_append_sheet(
-      wb,
-      ws,
-      'Dados'
-    );
-
-    XLSX.writeFile(wb, filePath);
-
-    return {
-      sucesso: true,
-      caminho: filePath
-    };
-
-  } catch (e) {
-
-    console.error(e);
-
-    return {
-      sucesso: false,
-      erro: e.message
-    };
-  }
-});
-
-ipcMain.handle('abrir-email', async (event, assunto, corpo, anexo) => {
-
-  try {
-
-    const url =
-      `mailto:?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`;
-
-    await shell.openExternal(url);
-
-    if (anexo) {
-      shell.showItemInFolder(anexo);
+    async function uploadLogo() {
+      const res = await ipcRenderer.invoke('upload-logo');
+      if (res.sucesso) {
+        configApp.logo = res.caminho;
+        aplicarLogo(res.caminho);
+        alert('Logo atualizado!');
+      }
     }
 
-    return { sucesso: true };
+    function carregarDados() {
+      const d = localStorage.getItem('sucataDados');
+      if (d) dados = JSON.parse(d);
+      if (!dados.unidades) dados.unidades = [];
+      if (!dados.tipos) dados.tipos = [];
+      if (!dados.lancamentos) dados.lancamentos = [];
+    }
 
-  } catch (e) {
+    function salvarDados() {
+      localStorage.setItem('sucataDados', JSON.stringify(dados));
+    }
 
-    console.error(e);
-
-    return {
-      sucesso: false,
-      erro: e.message
-    };
-  }
-});
-
-app.on('window-all-closed', () => {
-
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
-
-});
-
-process.on('uncaughtException', (err) => {
-  console.error('Erro não tratado:', err);
-});
-
-process.on('unhandledRejection', (reason) => {
-  console.error('Promise rejeitada:', reason);
-});
+    async function carregarHistoricoDaPasta() {
+      const pasta = await ipcRenderer.invoke('get-pasta');
