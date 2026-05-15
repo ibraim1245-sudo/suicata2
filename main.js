@@ -38,27 +38,10 @@ function createWindow() {
   });
   mainWindow.loadFile('index.html');
   Menu.setApplicationMenu(null);
-  // mainWindow.webContents.openDevTools(); // Descomenta se quiser ver erros
+  // mainWindow.webContents.openDevTools(); // Descomenta pra ver erro
 }
 
 app.whenReady().then(createWindow);
-
-ipcMain.handle('login', (event, user, pass) => {
-  const config = lerConfig();
-  const achou = config.usuarios.find(u => u.usuario === user && u.senha === pass);
-  return achou? { sucesso: true, usuario: user, admin: achou.admin || false } : { sucesso: false };
-});
-
-ipcMain.handle('salvar-usuarios', (event, usuarios) => {
-  const config = lerConfig();
-  config.usuarios = usuarios;
-  salvarConfig(config);
-  return { sucesso: true };
-});
-
-ipcMain.handle('get-usuarios', () => {
-  return lerConfig().usuarios || [];
-});
 
 ipcMain.handle('get-config', () => {
   return lerConfig();
@@ -98,25 +81,6 @@ ipcMain.handle('salvar-compra', async (event, compra) => {
   const idx = config.compras.findIndex(c => c.mes === compra.mes);
   if (idx >= 0) config.compras[idx] = compra;
   else config.compras.push(compra);
-  salvarConfig(config);
-  return { sucesso: true };
-});
-
-ipcMain.handle('alterar-senha', (event, usuario, senhaAtual, novaSenha) => {
-  const config = lerConfig();
-  const user = config.usuarios.find(u => u.usuario === usuario);
-  if (!user) return { sucesso: false, erro: 'Usuario nao encontrado' };
-  if (user.senha!== senhaAtual) return { sucesso: false, erro: 'Senha atual incorreta' };
-  user.senha = novaSenha;
-  salvarConfig(config);
-  return { sucesso: true };
-});
-
-ipcMain.handle('alterar-senha-admin', (event, usuario, novaSenha) => {
-  const config = lerConfig();
-  const user = config.usuarios.find(u => u.usuario === usuario);
-  if (!user) return { sucesso: false, erro: 'Usuario nao encontrado' };
-  user.senha = novaSenha;
   salvarConfig(config);
   return { sucesso: true };
 });
