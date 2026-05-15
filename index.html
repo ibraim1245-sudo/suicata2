@@ -1,471 +1,304 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<title>Controle Industrial de Sucata Desktop</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
-<style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif}
-body{background:#0f172a;color:#e2e8f0;padding:15px}
-.container{max-width:1400px;margin:0 auto}
-h1{color:#38bdf8;text-align:center;margin-bottom:10px}
-.subtitle{text-align:center;color:#94a3b8;margin-bottom:20px;font-size:14px}
-.tabs{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}
-.tab{padding:12px 20px;background:#1e293b;border:1px solid #334155;border-radius:8px;cursor:pointer}
-.tab.active{background:#38bdf8;color:#0f172a;font-weight:bold}
-.content{display:none}
-.content.active{display:block}
-.card{background:#1e293b;padding:20px;border-radius:12px;margin-bottom:15px;border:1px solid #334155}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:15px}
-.grid-2{grid-template-columns:repeat(auto-fit,minmax(400px,1fr))}
-label{display:block;margin:10px 0 5px;font-size:14px;color:#94a3b8}
-input,select{width:100%;padding:12px;background:#0f172a;border:1px solid #475569;border-radius:8px;color:#fff;font-size:16px}
-input:disabled{background:#1e293b;color:#64748b}
-button{padding:12px 20px;background:#38bdf8;color:#0f172a;border:none;border-radius:8px;font-size:16px;font-weight:bold;cursor:pointer;margin-top:10px;margin-right:10px}
-.btn-green{background:#22c55e}
-.btn-orange{background:#f97316;color:#fff}
-.btn-red{background:#ef4444;color:#fff}
-.btn-small{padding:6px 12px;font-size:14px;margin:0}
-table{width:100%;font-size:14px;margin-top:15px;border-collapse:collapse}
-th,td{padding:10px;border-bottom:1px solid #334155;text-align:left}
-th{color:#38bdf8}
-.kpi{text-align:center}
-.kpi h3{font-size:14px;color:#94a3b8}
-.kpi p{font-size:28px;font-weight:bold;color:#38bdf8;margin-top:5px}
-.status{font-size:12px;text-align:center;margin-top:10px;min-height:18px}
-.codigo{background:#0f172a;padding:4px 8px;border-radius:4px;font-family:monospace;color:#38bdf8}
-.busca-rapida{margin-bottom:15px}
-</style>
+  <meta charset="UTF-8">
+  <title>Controle Industrial de Sucata</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #2563eb; --primary-hover: #1d4ed8; --success: #10b981;
+      --danger: #ef4444; --warning: #f59e0b; --bg: #f8fafc;
+      --surface: #ffffff; --surface-2: #f1f5f9; --text: #0f172a;
+      --text-secondary: #64748b; --border: #e2e8f0; --shadow: 0 1px 3px 0 rgba(0,0,0,0.1);
+      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1); --radius: 12px; --radius-sm: 8px;
+    }
+    [data-tema="escuro"] {
+      --primary: #3b82f6; --primary-hover: #2563eb; --success: #34d399;
+      --danger: #f87171; --warning: #fbbf24; --bg: #0f172a;
+      --surface: #1e293b; --surface-2: #334155; --text: #f1f5f9;
+      --text-secondary: #94a3b8; --border: #334155; --shadow: 0 1px 3px 0 rgba(0,0,0,0.3);
+      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.3);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; }
+    .hidden { display: none!important; }
+    #login-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .login-box { background: var(--surface); padding: 48px; border-radius: var(--radius); box-shadow: var(--shadow-lg); width: 400px; }
+    .login-box h2 { text-align: center; margin-bottom: 32px; font-size: 24px; font-weight: 700; color: var(--text); }
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; margin-bottom: 8px; font-weight: 500; font-size: 13px; color: var(--text-secondary); }
+    .form-group input,.form-group select { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; background: var(--surface); color: var(--text); transition: all 0.2s; }
+    .form-group input:focus,.form-group select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+    .btn { padding: 10px 18px; border: none; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; font-size: 14px; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+    .btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-lg); }
+    .btn-primary { background: var(--primary); color: white; width: 100%; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-success { background: var(--success); color: white; }
+    .btn-danger { background: var(--danger); color: white; }
+    .btn-warning { background: var(--warning); color: white; }
+    .btn-secondary { background: var(--surface-2); color: var(--text); }
+    .btn-sm { padding: 6px 12px; font-size: 13px; }
+    .btn-icon { padding: 8px; width: 36px; height: 36px; justify-content: center; }
+    .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow); }
+    .header-left { display: flex; align-items: center; gap: 16px; }
+    .header-left img { height: 36px; max-width: 140px; object-fit: contain; }
+    .header h1 { font-size: 18px; font-weight: 600; color: var(--text); }
+    .user-info { display: flex; align-items: center; gap: 12px; }
+    .user-info span { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
+    .tema-toggle { background: var(--surface-2); border: 1px solid var(--border); color: var(--text); padding: 8px; border-radius: var(--radius-sm); cursor: pointer; font-size: 18px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; }
+    .tema-toggle:hover { background: var(--border); }
+    .container { max-width: 1600px; margin: 0 auto; padding: 24px; }
+    .tabs { display: flex; gap: 4px; margin-bottom: 24px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+    .tab { padding: 12px 20px; background: transparent; border: none; cursor: pointer; font-weight: 500; font-size: 14px; color: var(--text-secondary); border-bottom: 2px solid transparent; transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
+    .tab:hover { color: var(--text); background: var(--surface-2); }
+    .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+    .content { background: var(--surface); padding: 32px; border-radius: var(--radius); box-shadow: var(--shadow); }
+    .card { background: var(--surface-2); padding: 24px; border-radius: var(--radius); margin-bottom: 20px; border: 1px solid var(--border); }
+    .card h3 { margin-bottom: 16px; font-size: 16px; font-weight: 600; color: var(--text); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+    .table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 16px; font-size: 13px; }
+    .table th { padding: 12px 16px; text-align: left; font-weight: 600; color: var(--text-secondary); background: var(--surface-2); border-bottom: 1px solid var(--border); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .table td { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+    .table tbody tr:hover { background: var(--surface-2); }
+    .table tbody tr:last-child td { border-bottom: none; }
+    .flex { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
+    .modal.active { display: flex; }
+    .modal-content { background: var(--surface); padding: 32px; border-radius: var(--radius); width: 520px; max-width: 90%; box-shadow: var(--shadow-lg); }
+    .modal-content h3 { margin-bottom: 20px; font-size: 18px; font-weight: 600; }
+    .chart-container { position: relative; height: 320px; margin-top: 20px; }
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .stat-card { background: var(--surface); border: 1px solid var(--border); padding: 20px; border-radius: var(--radius); }
+    .stat-card h4 { font-size: 13px; color: var(--text-secondary); font-weight: 500; margin-bottom: 8px; }
+    .stat-card p { font-size: 28px; font-weight: 700; color: var(--text); }
+    .logo-preview { max-width: 200px; max-height: 80px; margin-top: 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px; background: white; }
+    .badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+    .badge-success { background: rgba(16,185,129,0.1); color: var(--success); }
+    .badge-danger { background: rgba(239,68,68,0.1); color: var(--danger); }
+  </style>
 </head>
 <body>
-<div class="container">
-<h1>Controle Industrial de Sucata Desktop</h1>
-<div class="subtitle" id="empresaAtiva">Matriz: Não configurada</div>
-<div class="tabs">
-<div class="tab active" onclick="trocarTab('dashboard')">Dashboard</div>
-<div class="tab" onclick="trocarTab('lancamento')">Lançamento</div>
-<div class="tab" onclick="trocarTab('relatorios')">Relatórios</div>
-<div class="tab" onclick="trocarTab('config')">Config Geral</div>
-</div>
-<div id="dashboard" class="content active">
-<div class="card">
-<label>Filtrar Dashboard por Unidade</label>
-<select id="dashUnidade" onchange="atualizarDashboard()"><option value="">Todas as Unidades</option></select>
-</div>
-<div class="card grid">
-<div class="kpi"><h3>KG HOJE</h3><p id="kpiHoje">0</p></div>
-<div class="kpi"><h3>KG MÊS</h3><p id="kpiMes">0</p></div>
-<div class="kpi"><h3>VALOR MÊS R$</h3><p id="kpiValor">0</p></div>
-<div class="kpi"><h3>LANÇAMENTOS</h3><p id="kpiTotal">0</p></div>
-</div>
-<div class="card grid grid-2">
-<div><h3>Kg por Unidade</h3><canvas id="chartUnidade"></canvas></div>
-<div><h3>Kg por Setor</h3><canvas id="chartSetor"></canvas></div>
-</div>
-</div>
-<div id="lancamento" class="content">
-<div class="card">
-<h3>Pasta da Base de Dados</h3>
-<button class="btn-green" onclick="ativarBackupExtensao()">Escolher/Trocar Pasta</button>
-<div class="status" id="statusPasta">Aguardando configuração...</div>
-</div>
-<div class="card">
-<h3>Novo Lançamento <span class="codigo" id="proximoLancCod">LAN-20260514-0001</span></h3>
-<div class="grid">
-<div><label>Unidade *</label><select id="lancUnidade" onchange="carregarSetores()"></select></div>
-<div><label>Setor *</label><select id="lancSetor" onchange="carregarMaquinas()"></select></div>
-<div><label>Máquina *</label><select id="lancMaquina"></select></div>
-</div>
-<div class="grid">
-<div><label>Tipo de Sucata *</label><select id="lancTipoSucata" onchange="carregarValorBase()"></select></div>
-<div><label>Peso (kg) *</label><input type="number" id="lancPeso" step="0.1" oninput="calcularValor()"></div>
-<div><label>Valor Base R$/kg</label><input type="number" id="lancValorBase" disabled></div>
-<div><label>Valor Total R$</label><input type="number" id="lancValorTotal" disabled></div>
-</div>
-<label>Observação / OS</label><input type="text" id="lancObs">
-<button onclick="salvarLancamento()">Salvar Lançamento</button>
-<div class="status" id="statusLanc"></div>
-</div>
-</div>
-<div id="relatorios" class="content">
-<div class="card">
-<h3>Gerar Relatórios</h3>
-<div class="busca-rapida">
-<label>Pesquisar Lançamento</label>
-<input type="text" id="buscaLanc" placeholder="Digite código, OS, máquina..." oninput="buscarLancamento()">
-</div>
-<div class="grid">
-<div><label>Unidade</label><select id="relUnidade"><option value="">Todas</option></select></div>
-<div><label>Data Início</label><input type="date" id="relDataIni"></div>
-<div><label>Data Fim</label><input type="date" id="relDataFim"></div>
-<div><label>Setor</label><select id="relSetor"><option value="">Todos</option></select></div>
-</div>
-<button onclick="gerarRelatorio()">Filtrar</button>
-<button class="btn-green" onclick="exportarCSV()">Exportar Excel/CSV</button>
-<button class="btn-orange" onclick="exportarPDF()">Exportar PDF</button>
-<table id="tabelaRelatorio">
-<thead><tr><th>Cód.Lanç</th><th>Data</th><th>Unidade</th><th>Setor</th><th>Máquina</th><th>Tipo</th><th>Kg</th><th>R$/kg</th><th>Total R$</th><th>Ação</th></tr></thead>
-<tbody></tbody>
-</table>
-</div>
-</div>
-<div id="config" class="content">
-<div class="card">
-<h3>1. Matriz / Empresa Principal</h3>
-<div class="grid">
-<div><label>Nome da Matriz</label><input type="text" id="cadMatrizNome" placeholder="Ex: Metalúrgica São Paulo"></div>
-<div><label>CNPJ</label><input type="text" id="cadMatrizCnpj"></div>
-</div>
-<button onclick="salvarMatriz()">Salvar Matriz</button>
-</div>
-<div class="grid grid-2">
-<div class="card">
-<h3>2. Unidades / Filiais <span class="codigo">Auto: FIL-001</span></h3>
-<label>Nome da Unidade</label><input type="text" id="cadUnidadeNome" placeholder="Ex: Filial Campinas">
-<button onclick="cadastrarUnidade()">Adicionar Unidade</button>
-<table id="tabelaUnidades"><thead><tr><th>Código</th><th>Unidade</th><th>Ação</th></tr></thead><tbody></tbody></table>
-</div>
-<div class="card">
-<h3>3. Setores <span class="codigo">Auto: SET-001</span></h3>
-<label>Unidade</label><select id="cadSetorUnidade"></select>
-<label>Nome do Setor</label><input type="text" id="cadSetorNome">
-<button onclick="cadastrarSetor()">Adicionar Setor</button>
-<table id="tabelaSetores"><thead><tr><th>Código</th><th>Unidade</th><th>Setor</th><th>Ação</th></tr></thead><tbody></tbody></table>
-</div>
-</div>
-<div class="grid grid-2">
-<div class="card">
-<h3>4. Máquinas <span class="codigo">Auto: MAQ-001</span></h3>
-<label>Unidade</label><select id="cadMaqUnidade" onchange="carregarSetoresMaq()"></select>
-<label>Setor</label><select id="cadMaqSetor"></select>
-<label>Nome da Máquina</label><input type="text" id="cadMaqNome">
-<button onclick="cadastrarMaquina()">Adicionar Máquina</button>
-<table id="tabelaMaquinas"><thead><tr><th>Código</th><th>Unidade</th><th>Setor</th><th>Máquina</th><th>Ação</th></tr></thead><tbody></tbody></table>
-</div>
-<div class="card">
-<h3>5. Tabela Geral de Valores <span class="codigo">Auto: SUC-001</span></h3>
-<label>Tipo de Sucata</label><input type="text" id="cadTipoSucata" placeholder="Ex: Cavaco Aço 1020">
-<label>Valor Base R$/kg</label><input type="number" id="cadValorSucata" step="0.01">
-<button onclick="cadastrarTipoSucata()">Adicionar/Atualizar Valor</button>
-<table id="tabelaValores"><thead><tr><th>Código</th><th>Tipo Sucata</th><th>R$/kg</th><th>Ação</th></tr></thead><tbody></tbody></table>
-</div>
-</div>
-</div>
-</div>
-<script>
-const { ipcRenderer } = require('electron');
-const { jsPDF } = window.jspdf;
-let db = JSON.parse(localStorage.getItem('sucataDB_v3') || '{"matriz":{},"unidades":[],"setores":[],"maquinas":[],"tiposSucata":[],"lancamentos":[],"contadores":{"unidade":0,"setor":0,"maquina":0,"sucata":0,"lancamento":{}}}');
-let chartUnidade, chartSetor;
-let dadosRelatorioAtual = [];
+  <div id="login-screen">
+    <div class="login-box">
+      <h2>Controle de Sucata</h2>
+      <div class="form-group">
+        <label>Usuário</label>
+        <input type="text" id="loginUsuario" value="admin" placeholder="Digite seu usuário">
+      </div>
+      <div class="form-group">
+        <label>Senha</label>
+        <input type="password" id="loginSenha" value="admin" placeholder="Digite sua senha">
+      </div>
+      <button class="btn btn-primary" onclick="fazerLogin()">Entrar</button>
+      <p id="loginErro" style="color:var(--danger);margin-top:12px;text-align:center;font-size:13px;"></p>
+    </div>
+  </div>
 
-async function salvarArquivo(nome, conteudo) {
-  const res = await ipcRenderer.invoke('salvar-backup', { nome, conteudo });
-  if (res.sucesso) {
-    document.getElementById('statusLanc').textContent = `✓ Salvo em ${res.pasta}`;
-    document.getElementById('statusLanc').style.color = '#22c55e';
-    setTimeout(() => document.getElementById('statusLanc').textContent = '', 3000);
-  } else {
-    document.getElementById('statusLanc').textContent = '❌ ' + res.erro;
-    document.getElementById('statusLanc').style.color = '#ef4444';
-  }
-}
+  <div id="app" class="hidden">
+    <div class="header">
+      <div class="header-left">
+        <img id="logoEmpresa" src="" alt="Logo" style="display:none;">
+        <h1>Controle Industrial de Sucata</h1>
+      </div>
+      <div class="user-info">
+        <button class="tema-toggle" onclick="alternarTema()" id="btnTema">🌙</button>
+        <span id="nomeUsuario"></span>
+        <button class="btn btn-secondary btn-sm" onclick="logout()">Sair</button>
+      </div>
+    <div class="container">
+      <div class="tabs">
+        <button class="tab active" onclick="abrirAba('dashboard')">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0zM4.5 7.5a.5.5 0 0 0 0 1h5.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H4.5z"/></svg>
+          Dashboard
+        </button>
+        <button class="tab" onclick="abrirAba('lancamento')">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 16z"/><path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/></svg>
+          Lançamento
+        </button>
+        <button class="tab" onclick="abrirAba('compras')">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM3.102 4l1.313 7h8.17l1.313-7H3.102zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/></svg>
+          Compras
+        </button>
+        <button class="tab" onclick="abrirAba('relatorios')">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2zm15 2h-4v3h4V4zm0 4h-4v3h4V8zm0 4h-4v3h4v-3zM5 4H1v3h4V4zm0 4H1v3h4V8zm0 4H1v3h4v-3z"/></svg>
+          Relatórios
+        </button>
+        <button class="tab" onclick="abrirAba('config')">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 0 0 1-4.492 0z"/><path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319z"/></svg>
+          Config Geral
+        </button>
+        <button class="tab" onclick="abrirAba('configuracoes')">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zm3.5 7.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5z"/></svg>
+          Configurações
+        </button>
+        <button class="tab" id="tabUsuarios" onclick="abrirAba('usuarios')">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M5.216 14A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216zM4.5 8a2.5 2.5 0 1 0 0-5 2.5 0 0 0 0 5z"/></svg>
+          Usuários
+        </button>
+      </div>
 
-async function ativarBackupExtensao() {
-  const pasta = await ipcRenderer.invoke('escolher-pasta');
-  if (pasta) {
-    document.getElementById('statusPasta').textContent = `✓ Pasta configurada: ${pasta}`;
-    document.getElementById('statusPasta').style.color = '#22c55e';
-  }
-}
+      <div id="dashboard" class="content">
+        <div class="flex" style="justify-content:space-between;margin-bottom:24px;">
+          <h2 style="font-size:20px;font-weight:700;">Dashboard</h2>
+          <div class="flex">
+            <button class="btn btn-success btn-sm" onclick="exportarDashboardExcel()">
+              <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/></svg>
+              Excel
+            </button>
+            <button class="btn btn-primary btn-sm" onclick="enviarDashboardEmail()">
+              <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2zm13 2.383-4.708 2.825L15 11.105V5.383zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741zM1 11.105l4.708-2.897L1 5.383v5.722z"/></svg>
+              Email
+            </button>
+          </div>
+        <div class="stat-grid">
+          <div class="stat-card"><h4>Total Kg Mês</h4><p id="statKg">0</p></div>
+          <div class="stat-card"><h4>Valor Total Mês</h4><p id="statValor">R$ 0</p></div>
+          <div class="stat-card"><h4>Lançamentos Mês</h4><p id="statLanc">0</p></div>
+          <div class="stat-card"><h4>% Perda Mensal</h4><p id="statPerda">0%</p></div>
+        </div>
+        <div class="grid">
+          <div class="card"><h3>Kg por Unidade - Mês</h3><div class="chart-container"><canvas id="grafUnidade"></canvas></div></div>
+          <div class="card"><h3>Kg por Tipo Sucata</h3><div class="chart-container"><canvas id="grafTipo"></canvas></div></div>
+          <div class="card"><h3>Top 10 Máquinas - Mês</h3><div class="chart-container"><canvas id="grafMaquina"></canvas></div></div>
+          <div class="card"><h3>Kg por Setor - Mês</h3><div class="chart-container"><canvas id="grafSetor"></canvas></div></div>
+        </div>
+        <div class="card"><h3>Sucata x Aço Comprado Mensal</h3><div class="chart-container"><canvas id="grafComparativo"></canvas></div></div>
+        <div class="card"><h3>Tendência Total Sucata - 12 Meses</h3><div class="chart-container"><canvas id="grafTendencia"></canvas></div></div>
+      </div>
 
-async function verificarPastaSalva() {
-  const pasta = await ipcRenderer.invoke('get-pasta');
-  if (pasta) {
-    document.getElementById('statusPasta').textContent = `✓ Pasta: ${pasta}`;
-    document.getElementById('statusPasta').style.color = '#22c55e';
-  } else {
-    document.getElementById('statusPasta').textContent = '⚠ Clique em "Escolher/Trocar Pasta"';
-    document.getElementById('statusPasta').style.color = '#f97316';
-  }
-}
+      <div id="lancamento" class="content hidden">
+        <h2 style="font-size:20px;font-weight:700;margin-bottom:24px;">Lançamento de Sucata</h2>
+        <div class="card">
+          <div class="grid">
+            <div class="form-group"><label>Data</label><input type="date" id="lanData"></div>
+            <div class="form-group"><label>Unidade</label><select id="lanUnidade" onchange="carregarSetores()"></select></div>
+            <div class="form-group"><label>Setor</label><select id="lanSetor" onchange="carregarMaquinas()"></select></div>
+            <div class="form-group"><label>Máquina</label><select id="lanMaquina"></select></div>
+            <div class="form-group"><label>Tipo Sucata</label><select id="lanTipo"></select></div>
+            <div class="form-group"><label>Peso (Kg)</label><input type="number" id="lanPeso" step="0.01" placeholder="0.00"></div>
+          </div>
+          <div class="flex">
+            <button class="btn btn-primary" onclick="salvarLancamento()" id="btnSalvarLan">Salvar Lançamento</button>
+            <button class="btn btn-secondary hidden" onclick="cancelarEdicaoLan()" id="btnCancelarLan">Cancelar</button>
+          </div>
+        <div class="card">
+          <h3>Histórico</h3>
+          <table class="table" id="tabelaLanc">
+            <thead><tr><th>Data</th><th>Unidade</th><th>Setor</th><th>Máquina</th><th>Tipo</th><th>Kg</th><th>Valor</th><th>Usuário</th><th>Ações</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
 
-function gerarCodigo(tipo) {
-    if (!db.contadores) db.contadores = {unidade:0, setor:0, maquina:0, sucata:0, lancamento:{}};
-    if (tipo === 'lancamento') {
-        const hoje = new Date().toISOString().slice(0,10).replace(/-/g,'');
-        if (!db.contadores.lancamento[hoje]) db.contadores.lancamento[hoje] = 0;
-        db.contadores.lancamento[hoje]++;
-        return `LAN-${hoje}-${String(db.contadores.lancamento[hoje]).padStart(4,'0')}`;
-    }
-    db.contadores[tipo]++;
-    const prefixos = {unidade:'FIL', setor:'SET', maquina:'MAQ', sucata:'SUC'};
-    return `${prefixos[tipo]}-${String(db.contadores[tipo]).padStart(3,'0')}`;
-}
+      <div id="compras" class="content hidden">
+        <h2 style="font-size:20px;font-weight:700;margin-bottom:24px;">Lançamento de Aço Comprado</h2>
+        <div class="card">
+          <div class="grid">
+            <div class="form-group"><label>Mês/Ano</label><input type="month" id="compraMes"></div>
+            <div class="form-group"><label>Total Kg Comprado</label><input type="number" id="compraKg" step="0.01" placeholder="0.00"></div>
+          </div>
+          <button class="btn btn-primary" onclick="salvarCompra()">Salvar Compra</button>
+        </div>
+        <div class="card">
+          <h3>Histórico de Compras</h3>
+          <table class="table" id="tabelaCompras">
+            <thead><tr><th>Mês</th><th>Kg Comprado</th><th>% Sucata</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
 
-function init() {
-    if (!db.contadores) db.contadores = {unidade:0, setor:0, maquina:0, sucata:0, lancamento:{}};
-    atualizarNomeEmpresa();
-    carregarSelects();
-    atualizarDashboard();
-    atualizarTabelasConfig();
-    atualizarProximoLancamento();
-    verificarPastaSalva();
-    const hoje = new Date().toISOString().slice(0,10);
-    document.getElementById('relDataIni').value = hoje.slice(0,8) + '01';
-    document.getElementById('relDataFim').value = hoje;
-}
+      <div id="relatorios" class="content hidden">
+        <h2 style="font-size:20px;font-weight:700;margin-bottom:24px;">Relatórios</h2>
+        <div class="card">
+          <div class="grid">
+            <div class="form-group"><label>Data Início</label><input type="date" id="relInicio"></div>
+            <div class="form-group"><label>Data Fim</label><input type="date" id="relFim"></div>
+            <div class="form-group"><label>Unidade</label><select id="relUnidade"><option value="">Todas</option></select></div>
+          </div>
+          <div class="flex">
+            <button class="btn btn-primary btn-sm" onclick="gerarRelatorio()">Filtrar</button>
+            <button class="btn btn-success btn-sm" onclick="exportarRelatorioExcel()">Exportar Excel</button>
+            <button class="btn btn-warning btn-sm" onclick="enviarRelatorioEmail()">Enviar Email</button>
+          </div>
+        <div class="card">
+          <table class="table" id="tabelaRel">
+            <thead><tr><th>Data</th><th>Unidade</th><th>Setor</th><th>Máquina</th><th>Tipo</th><th>Kg</th><th>R$/Kg</th><th>Total</th><th>Usuário</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
 
-function atualizarProximoLancamento() {
-    const hoje = new Date().toISOString().slice(0,10).replace(/-/g,'');
-    const prox = (db.contadores.lancamento[hoje] || 0) + 1;
-    document.getElementById('proximoLancCod').textContent = `LAN-${hoje}-${String(prox).padStart(4,'0')}`;
-}
+      <div id="config" class="content hidden">
+        <h2 style="font-size:20px;font-weight:700;margin-bottom:24px;">Configuração Geral</h2>
+        <div class="grid">
+          <div class="card">
+            <h3>Matriz</h3>
+            <div class="form-group"><label>Nome</label><input type="text" id="cfgMatriz" placeholder="Nome da empresa"></div>
+            <button class="btn btn-primary btn-sm" onclick="salvarMatriz()">Salvar</button>
+          </div>
+          <div class="card">
+            <h3>Unidades</h3>
+            <div class="flex"><input type="text" id="novaUnidade" placeholder="Nome da unidade"><button class="btn btn-success btn-sm" onclick="addUnidade()">Adicionar</button></div>
+            <table class="table" id="tabelaUnid"><tbody></tbody></table>
+          </div>
+          <div class="card">
+            <h3>Tipos de Sucata</h3>
+            <div class="flex">
+              <input type="text" id="novoTipo" placeholder="Nome" style="flex:1;">
+              <input type="number" id="novoValor" placeholder="R$/Kg" step="0.01" style="width:120px;">
+              <button class="btn btn-success btn-sm" onclick="addTipo()">Adicionar</button>
+            </div>
+            <table class="table" id="tabelaTipo"><tbody></tbody></table>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Setores e Máquinas</h3>
+          <div class="form-group"><label>Unidade</label><select id="cfgUnidadeSet" onchange="carregarSetoresCfg()"></select></div>
+          <div class="grid">
+            <div>
+              <h4 style="font-size:14px;margin-bottom:12px;font-weight:600;">Setores</h4>
+              <div class="flex"><input type="text" id="novoSetor" placeholder="Nome setor"><button class="btn btn-success btn-sm" onclick="addSetor()">Adicionar</button></div>
+              <table class="table" id="tabelaSetor"><tbody></tbody></table>
+            </div>
+            <div>
+              <h4 style="font-size:14px;margin-bottom:12px;font-weight:600;">Máquinas</h4>
+              <div class="form-group"><label>Setor</label><select id="cfgSetorMaq" onchange="carregarMaquinasCfg()"></select></div>
+              <div class="flex"><input type="text" id="novaMaquina" placeholder="Nome máquina"><button class="btn btn-success btn-sm" onclick="addMaquina()">Adicionar</button></div>
+              <table class="table" id="tabelaMaq"><tbody></tbody></table>
+            </div>
+          </div>
+        </div>
+      </div>
 
-function trocarTab(tab) {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
-    event.target.classList.add('active');
-    document.getElementById(tab).classList.add('active');
-    if(tab === 'dashboard') atualizarDashboard();
-}
+      <div id="configuracoes" class="content hidden">
+        <h2 style="font-size:20px;font-weight:700;margin-bottom:24px;">Configurações do Sistema</h2>
+        <div class="grid">
+          <div class="card">
+            <h3>Logo da Empresa</h3>
+            <img id="logoPreview" class="logo-preview hidden" src="">
+            <button class="btn btn-primary btn-sm" onclick="uploadLogo()">Escolher Logo</button>
+          </div>
+          <div class="card">
+            <h3>Pasta de Backup</h3>
+            <p id="pastaAtual" style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;">Nenhuma pasta selecionada</p>
+            <button class="btn btn-primary btn-sm" onclick="escolherPasta()">Escolher/Trocar Pasta</button>
+          </div>
+          <div class="card">
+            <h3>Alterar Minha Senha</h3>
+            <div class="form-group"><label>Senha Atual</label><input type="password" id="senhaAtual"></div>
+            <div class="form-group"><label>Nova Senha</label><input type="password" id="senhaNova"></div>
+            <button class="btn btn-warning btn-sm" onclick="alterarMinhaSenha()">Alterar Senha</button>
+          </div>
+        </div>
+      </div>
 
-function salvarMatriz() {
-    db.matriz = { nome: document.getElementById('cadMatrizNome').value, cnpj: document.getElementById('cadMatrizCnpj').value };
-    salvarDB(); atualizarNomeEmpresa();
-}
-
-function cadastrarUnidade() {
-    const nome = document.getElementById('cadUnidadeNome').value.trim();
-    if (!nome) return alert('Preencha o nome');
-    const cod = gerarCodigo('unidade');
-    db.unidades.push({cod, nome}); salvarDB(); carregarSelects(); atualizarTabelasConfig();
-    document.getElementById('cadUnidadeNome').value = '';
-}
-
-function cadastrarSetor() {
-    const unidade = document.getElementById('cadSetorUnidade').value;
-    const nome = document.getElementById('cadSetorNome').value.trim();
-    if (!unidade ||!nome) return alert('Preencha unidade e setor');
-    db.setores.push({id: gerarCodigo('setor'), unidade, nome}); salvarDB(); carregarSelects(); atualizarTabelasConfig();
-    document.getElementById('cadSetorNome').value = '';
-}
-
-function carregarSetoresMaq() {
-    const unidade = document.getElementById('cadMaqUnidade').value;
-    document.getElementById('cadMaqSetor').innerHTML = db.setores.filter(s => s.unidade === unidade).map(s => `<option value="${s.id}">${s.nome}</option>`).join('');
-}
-
-function cadastrarMaquina() {
-    const unidade = document.getElementById('cadMaqUnidade').value;
-    const setorId = document.getElementById('cadMaqSetor').value;
-    const nome = document.getElementById('cadMaqNome').value.trim();
-    if (!unidade ||!setorId ||!nome) return alert('Preencha todos os campos');
-    const setor = db.setores.find(s => s.id == setorId);
-    db.maquinas.push({id: gerarCodigo('maquina'), unidade, setorId, setorNome: setor.nome, nome});
-    salvarDB(); carregarSelects(); atualizarTabelasConfig();
-    document.getElementById('cadMaqNome').value = '';
-}
-
-function cadastrarTipoSucata() {
-    const tipo = document.getElementById('cadTipoSucata').value.trim();
-    const valor = parseFloat(document.getElementById('cadValorSucata').value) || 0;
-    if (!tipo) return alert('Preencha o tipo');
-    const idx = db.tiposSucata.findIndex(t => t.tipo === tipo);
-    if (idx >= 0) db.tiposSucata[idx].valor = valor;
-    else db.tiposSucata.push({id: gerarCodigo('sucata'), tipo, valor});
-    salvarDB(); carregarSelects(); atualizarTabelasConfig();
-    document.getElementById('cadTipoSucata').value = ''; document.getElementById('cadValorSucata').value = '';
-}
-
-function excluirItem(tipo, id) {
-    if (tipo === 'unidade' &&!confirm('Excluir unidade? Setores e máquinas vinculados serão afetados.')) return;
-    if (tipo === 'unidade') db.unidades = db.unidades.filter(u => u.cod!== id);
-    if (tipo === 'setor') db.setores = db.setores.filter(s => s.id!== id);
-    if (tipo === 'maquina') db.maquinas = db.maquinas.filter(m => m.id!== id);
-    if (tipo === 'valor') db.tiposSucata = db.tiposSucata.filter(t => t.id!== id);
-    salvarDB(); carregarSelects(); atualizarTabelasConfig();
-}
-
-function carregarSetores() {
-    const unidade = document.getElementById('lancUnidade').value;
-    document.getElementById('lancSetor').innerHTML = db.setores.filter(s => s.unidade === unidade).map(s => `<option value="${s.id}">${s.nome}</option>`).join('');
-    carregarMaquinas();
-}
-
-function carregarMaquinas() {
-    const setorId = document.getElementById('lancSetor').value;
-    document.getElementById('lancMaquina').innerHTML = db.maquinas.filter(m => m.setorId == setorId).map(m => `<option value="${m.id}">${m.nome}</option>`).join('');
-}
-
-function carregarValorBase() {
-    const tipo = document.getElementById('lancTipoSucata').value;
-    const sucata = db.tiposSucata.find(t => t.tipo === tipo);
-    document.getElementById('lancValorBase').value = sucata? sucata.valor.toFixed(2) : 0;
-    calcularValor();
-}
-
-function calcularValor() {
-    const peso = parseFloat(document.getElementById('lancPeso').value) || 0;
-    const valor = parseFloat(document.getElementById('lancValorBase').value) || 0;
-    document.getElementById('lancValorTotal').value = (peso * valor).toFixed(2);
-}
-
-async function salvarLancamento() {
-    const unidade = db.unidades.find(u => u.cod === document.getElementById('lancUnidade').value);
-    const setor = db.setores.find(s => s.id == document.getElementById('lancSetor').value);
-    const maq = db.maquinas.find(m => m.id == document.getElementById('lancMaquina').value);
-    const cod = gerarCodigo('lancamento');
-    const lanc = {
-        id: cod, data: new Date().toISOString(), dataBR: new Date().toLocaleString('pt-BR'),
-        unidade: unidade?.nome || '', unidadeCod: unidade?.cod || '',
-        setor: setor?.nome || '', maquina: maq?.nome || '',
-        tipoSucata: document.getElementById('lancTipoSucata').value,
-        peso: parseFloat(document.getElementById('lancPeso').value) || 0,
-        valorBase: parseFloat(document.getElementById('lancValorBase').value) || 0,
-        valorTotal: parseFloat(document.getElementById('lancValorTotal').value) || 0,
-        obs: document.getElementById('lancObs').value
-    };
-    if (!lanc.unidade ||!lanc.setor ||!lanc.maquina ||!lanc.peso) return alert('Preencha todos os campos obrigatórios');
-    db.lancamentos.unshift(lanc); salvarDB();
-    await salvarArquivo(`${cod}_${lanc.unidadeCod}.json`, JSON.stringify(lanc, null, 2));
-    ['lancPeso','lancObs'].forEach(id => document.getElementById(id).value = '');
-    atualizarDashboard(); atualizarProximoLancamento();
-}
-
-function atualizarDashboard() {
-    const unidadeFiltro = document.getElementById('dashUnidade').value;
-    const mes = new Date().getMonth();
-    const ano = new Date().getFullYear();
-    const lancMes = db.lancamentos.filter(l => {
-        const d = new Date(l.data);
-        return d.getMonth() === mes && d.getFullYear() === ano && (!unidadeFiltro || l.unidadeCod === unidadeFiltro);
-    });
-    const lancHoje = lancMes.filter(l => new Date(l.data).toDateString() === new Date().toDateString());
-    document.getElementById('kpiHoje').textContent = lancHoje.reduce((s,l) => s+l.peso, 0).toFixed(1) + ' kg';
-    document.getElementById('kpiMes').textContent = lancMes.reduce((s,l) => s+l.peso, 0).toFixed(1) + ' kg';
-    document.getElementById('kpiValor').textContent = 'R$ ' + lancMes.reduce((s,l) => s+l.valorTotal, 0).toFixed(2);
-    document.getElementById('kpiTotal').textContent = lancMes.length;
-
-    const porUnid = {}, porSetor = {};
-    lancMes.forEach(l => { porUnid[l.unidade] = (porUnid[l.unidade] || 0) + l.peso; porSetor[l.setor] = (porSetor[l.setor] || 0) + l.peso; });
-    if(chartUnidade) chartUnidade.destroy(); if(chartSetor) chartSetor.destroy();
-    chartUnidade = new Chart(document.getElementById('chartUnidade'), {type:'bar',data:{labels:Object.keys(porUnid),datasets:[{data:Object.values(porUnid),backgroundColor:'#38bdf8'}]},options:{plugins:{legend:{display:false}}}});
-    chartSetor = new Chart(document.getElementById('chartSetor'), {type:'bar',data:{labels:Object.keys(porSetor),datasets:[{data:Object.values(porSetor),backgroundColor:'#22c55e'}]},options:{plugins:{legend:{display:false}}}});
-}
-
-function buscarLancamento() {
-    const termo = document.getElementById('buscaLanc').value.toLowerCase();
-    if (!termo) return gerarRelatorio();
-    dadosRelatorioAtual = db.lancamentos.filter(l =>
-        l.id.toLowerCase().includes(termo) ||
-        l.obs.toLowerCase().includes(termo) ||
-        l.maquina.toLowerCase().includes(termo) ||
-        l.tipoSucata.toLowerCase().includes(termo)
-    );
-    renderizarTabelaRelatorio();
-}
-
-function gerarRelatorio() {
-    const ini = new Date(document.getElementById('relDataIni').value);
-    const fim = new Date(document.getElementById('relDataFim').value + 'T23:59:59');
-    const unidade = document.getElementById('relUnidade').value;
-    const setor = document.getElementById('relSetor').value;
-    dadosRelatorioAtual = db.lancamentos.filter(l => {
-        const d = new Date(l.data);
-        return d >= ini && d <= fim && (!unidade || l.unidadeCod === unidade) && (!setor || l.setor === setor);
-    });
-    renderizarTabelaRelatorio();
-}
-
-function renderizarTabelaRelatorio() {
-    document.querySelector('#tabelaRelatorio tbody').innerHTML = dadosRelatorioAtual.map(l =>
-        `<tr><td><span class="codigo">${l.id}</span></td><td>${l.dataBR.split(',')[0]}</td><td>${l.unidade}</td><td>${l.setor}</td><td>${l.maquina}</td><td>${l.tipoSucata}</td><td>${l.peso}</td><td>${l.valorBase.toFixed(2)}</td><td>${l.valorTotal.toFixed(2)}</td><td><button class="btn-red btn-small" onclick="excluirLancamento('${l.id}')">Excluir</button></td></tr>`
-    ).join('');
-}
-
-function excluirLancamento(id) {
-    if (!confirm(`Excluir lançamento ${id}?`)) return;
-    db.lancamentos = db.lancamentos.filter(l => l.id!== id);
-    salvarDB();
-    gerarRelatorio();
-    atualizarDashboard();
-}
-
-async function exportarCSV() {
-    let csv = 'Codigo,Data,Unidade,Setor,Maquina,Tipo_Sucata,Peso_Kg,Valor_Base,Valor_Total,Observacao\n';
-    const dados = dadosRelatorioAtual.length? dadosRelatorioAtual : db.lancamentos;
-    dados.forEach(l => csv += `"${l.id}","${l.dataBR}","${l.unidade}","${l.setor}","${l.maquina}","${l.tipoSucata}",${l.peso},${l.valorBase},${l.valorTotal},"${l.obs}"\n`);
-    await salvarArquivo(`Relatorio_Sucata_${new Date().toISOString().slice(0,10)}.csv`, csv);
-}
-
-function exportarPDF() {
-    const dados = dadosRelatorioAtual.length? dadosRelatorioAtual : db.lancamentos;
-    if (!dados.length) return alert('Gere um relatório primeiro');
-
-    const doc = new jsPDF();
-    const matriz = db.matriz.nome || 'Empresa';
-    const periodo = `${document.getElementById('relDataIni').value} a ${document.getElementById('relDataFim').value}`;
-
-    doc.setFontSize(16); doc.text(matriz, 14, 15);
-    doc.setFontSize(12); doc.text('Relatório de Controle Industrial de Sucata', 14, 22);
-    doc.setFontSize(10); doc.text(`Período: ${periodo}`, 14, 28);
-    doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')}`, 14, 33);
-
-    const totalKg = dados.reduce((s,l) => s+l.peso, 0);
-    const totalR$ = dados.reduce((s,l) => s+l.valorTotal, 0);
-
-    doc.autoTable({
-        startY: 40,
-        head: [['Cód','Data','Unidade','Setor','Máquina','Tipo','Kg','R$/kg','Total R$']],
-        body: dados.map(l => [
-            l.id, l.dataBR.split(',')[0], l.unidade, l.setor, l.maquina,
-            l.tipoSucata, l.peso.toFixed(1), l.valorBase.toFixed(2), l.valorTotal.toFixed(2)
-        ]),
-        foot: [['','','','','','TOTAL', totalKg.toFixed(1), '', 'R$ ' + totalR$.toFixed(2)]],
-        theme: 'grid',
-        headStyles: {fillColor: [56, 189, 248], fontSize: 8},
-        bodyStyles: {fontSize: 8},
-        footStyles: {fillColor: [30, 41, 59], fontStyle: 'bold', fontSize: 9}
-    });
-
-    doc.save(`Relatorio_Sucata_${new Date().toISOString().slice(0,10)}.pdf`);
-}
-
-function salvarDB() { localStorage.setItem('sucataDB_v3', JSON.stringify(db)); }
-
-function atualizarNomeEmpresa() {
-    document.getElementById('empresaAtiva').textContent = db.matriz.nome? `Matriz: ${db.matriz.nome} - ${db.matriz.cnpj || 'CNPJ N/I'}` : 'Matriz: Não configurada';
-    document.getElementById('cadMatrizNome').value = db.matriz.nome || '';
-    document.getElementById('cadMatrizCnpj').value = db.matriz.cnpj || '';
-}
-
-function carregarSelects() {
-    const unids = db.unidades.map(u => `<option value="${u.cod}">${u.nome} - ${u.cod}</option>`).join('');
-    ['lancUnidade','relUnidade','cadSetorUnidade','cadMaqUnidade','dashUnidade'].forEach(id => {
-        const el = document.getElementById(id), val = el.value;
-        el.innerHTML = (id.includes('rel')||id.includes('dash')? '<option value="">Todas</option>' : '') + unids;
-        el.value = val;
-    });
-    document.getElementById('relSetor').innerHTML = '<option value="">Todos</option>' + [...new Set(db.setores.map(s => s.nome))].map(s => `<option>${s}</option>`).join('');
-    document.getElementById('lancTipoSucata').innerHTML = db.tiposSucata.map(t => `<option>${t.tipo}</option>`).join('');
-    carregarSetores();
-}
-
-function atualizarTabelasConfig() {
-    document.querySelector('#tabelaUnidades tbody').innerHTML = db.unidades.map(u =>
-        `<tr><td><span class="codigo">${u.cod}</span></td><td>${u.nome}</td><td><button class="btn-red btn-small" onclick="excluirItem('unidade','${u.cod}')">Excluir</button></td></tr>`).join('');
-    document.querySelector('#tabelaSetores tbody').innerHTML = db.setores.map(s =>
-        `<tr><td><span class="codigo">${s.id}</span></td><td>${db.unidades.find(u=>u.cod===s.unidade)?.nome||s.unidade}</td><td>${s.nome}</td><td><button class="btn-red btn-small" onclick="excluirItem('setor','${s.id}')">Excluir</button></td></tr>`).join('');
-    document.querySelector('#tabelaMaquinas tbody').innerHTML = db.maquinas.map(m =>
-        `<tr><td><span class="codigo">${m.id}</span></td><td>${db.unidades.find(u=>u.cod===m.unidade)?.nome||m.unidade}</td><td>${m.setorNome}</td><td>${m.nome}</td><td><button class="btn-red btn-small" onclick="excluirItem('maquina','${m.id}')">Excluir</button></td></tr>`).join('');
-    document.querySelector('#tabelaValores tbody').innerHTML = db.tiposSucata.map(t =>
-        `<tr><td><span class="codigo">${t.id}</span></td><td>${t.tipo}</td><td>R$ ${t.valor.toFixed(2)}</td><td><button class="btn-red btn-small" onclick="excluirItem('valor','${t.id}')">Excluir</button></td></tr>`).join('');
-}
-
-init();
-</script>
-</body>
-</html>
+      <div id="usuarios" class="content hidden">
+        <h2 style="font-size:20px;font-weight:700;margin-bottom:24px;">Gestão de Usuários</h2>
+        <div class="card">
+          <h3>Cadastrar Novo Usuário</h3>
+          <div class="grid">
+            <div class="form-group"><label>Usuário</label><input type="text" id="novoUsuario" placeholder="nome.sobrenome"></div>
+            <div class="form-group"><label>Senha</label><input type="password" id="novaSenhaUser" placeholder="Senha inicial"></div>
+            <div class="form-group"><label>Admin?</label><select id="novoAdmin"><option value="false">Não</option><option value
