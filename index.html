@@ -1,449 +1,164 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <title>Controle Industrial de Sucata</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --primary: #2563eb; --primary-hover: #1d4ed8; --success: #10b981;
-      --danger: #ef4444; --warning: #f59e0b; --bg: #f8fafc;
-      --surface: #ffffff; --surface-2: #f1f5f9; --text: #0f172a;
-      --text-secondary: #64748b; --border: #e2e8f0; --shadow: 0 1px 3px 0 rgba(0,0,0,0.1);
-      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1); --radius: 12px; --radius-sm: 8px;
+const { app, BrowserWindow, ipcMain, dialog, Menu, shell } = require('electron');
+const fs = require('fs');
+const path = require('path');
+const XLSX = require('xlsx');
+
+const configPath = path.join(app.getPath('userData'), 'config.json');
+
+function lerConfig() {
+  try {
+    if (fs.existsSync(configPath)) return JSON.parse(fs.readFileSync(configPath, 'utf8'));
+  } catch (e) {}
+  return {
+    usuarios: [{usuario: 'admin', senha: 'admin', admin: true}],
+    pastaBackup: null,
+    tema: 'claro',
+    logo: null,
+    compras: []
+  };
+}
+
+function salvarConfig(config) {
+  try {
+    fs.mkdirSync(path.dirname(configPath), { recursive: true });
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+  } catch (e) {}
+}
+
+let mainWindow;
+
+function createWindow() {
+  mainWindow = new BrowserWindow({
+    width: 1500,
+    height: 950,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false
     }
-    [data-tema="escuro"] {
-      --primary: #3b82f6; --primary-hover: #2563eb; --success: #34d399;
-      --danger: #f87171; --warning: #fbbf24; --bg: #0f172a;
-      --surface: #1e293b; --surface-2: #334155; --text: #f1f5f9;
-      --text-secondary: #94a3b8; --border: #334155; --shadow: 0 1px 3px 0 rgba(0,0,0,0.3);
-      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.3);
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; }
-   .hidden { display: none!important; }
-   .form-group { margin-bottom: 20px; }
-   .form-group label { display: block; margin-bottom: 8px; font-weight: 500; font-size: 13px; color: var(--text-secondary); }
-   .form-group input,.form-group select { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; background: var(--surface); color: var(--text); transition: all 0.2s; }
-   .form-group input:focus,.form-group select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
-   .btn { padding: 10px 18px; border: none; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; font-size: 14px; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
-   .btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-lg); }
-   .btn-primary { background: var(--primary); color: white; }
-   .btn-primary:hover { background: var(--primary-hover); }
-   .btn-success { background: var(--success); color: white; }
-   .btn-danger { background: var(--danger); color: white; }
-   .btn-warning { background: var(--warning); color: white; }
-   .btn-secondary { background: var(--surface-2); color: var(--text); }
-   .btn-sm { padding: 6px 12px; font-size: 13px; }
-   .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow); }
-   .header-left { display: flex; align-items: center; gap: 16px; }
-   .header-left img { height: 36px; max-width: 140px; object-fit: contain; }
-   .header h1 { font-size: 18px; font-weight: 600; color: var(--text); }
-   .user-info { display: flex; align-items: center; gap: 12px; }
-   .tema-toggle { background: var(--surface-2); border: 1px solid var(--border); color: var(--text); padding: 8px; border-radius: var(--radius-sm); cursor: pointer; font-size: 18px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; }
-   .tema-toggle:hover { background: var(--border); }
-   .container { max-width: 1600px; margin: 0 auto; padding: 24px; }
-   .tabs { display: flex; gap: 4px; margin-bottom: 24px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
-   .tab { padding: 12px 20px; background: transparent; border: none; cursor: pointer; font-weight: 500; font-size: 14px; color: var(--text-secondary); border-bottom: 2px solid transparent; transition: all 0.2s; }
-   .tab:hover { color: var(--text); background: var(--surface-2); }
-   .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
-   .content { background: var(--surface); padding: 32px; border-radius: var(--radius); box-shadow: var(--shadow); }
-   .card { background: var(--surface-2); padding: 24px; border-radius: var(--radius); margin-bottom: 20px; border: 1px solid var(--border); }
-   .card h3 { margin-bottom: 16px; font-size: 16px; font-weight: 600; color: var(--text); }
-   .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
-   .table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 16px; font-size: 13px; }
-   .table th { padding: 12px 16px; text-align: left; font-weight: 600; color: var(--text-secondary); background: var(--surface-2); border-bottom: 1px solid var(--border); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
-   .table td { padding: 14px 16px; border-bottom: 1px solid var(--border); }
-   .table tbody tr:hover { background: var(--surface-2); }
-   .table tbody tr:last-child td { border-bottom: none; }
-   .flex { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-   .chart-container { position: relative; height: 320px; margin-top: 20px; }
-   .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px; }
-   .stat-card { background: var(--surface); border: 1px solid var(--border); padding: 20px; border-radius: var(--radius); }
-   .stat-card h4 { font-size: 13px; color: var(--text-secondary); font-weight: 500; margin-bottom: 8px; }
-   .stat-card p { font-size: 28px; font-weight: 700; color: var(--text); }
-   .logo-preview { max-width: 200px; max-height: 80px; margin-top: 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px; background: white; }
-  </style>
-</head>
-<body>
-  <div id="app">
-    <div class="header">
-      <div class="header-left">
-        <img id="logoEmpresa" src="" alt="Logo" style="display:none;">
-        <h1>Controle Industrial de Sucata</h1>
-      </div>
-      <div class="user-info">
-        <button class="tema-toggle" onclick="alternarTema()" id="btnTema">🌙</button>
-      </div>
-    </div>
-    <div class="container">
-      <div class="tabs">
-        <button class="tab active" onclick="abrirAba('dashboard', this)">Dashboard</button>
-        <button class="tab" onclick="abrirAba('lancamento', this)">Lançamento</button>
-        <button class="tab" onclick="abrirAba('compras', this)">Compras</button>
-        <button class="tab" onclick="abrirAba('relatorios', this)">Relatórios</button>
-        <button class="tab" onclick="abrirAba('config', this)">Config Geral</button>
-        <button class="tab" onclick="abrirAba('configuracoes', this)">Configurações</button>
-      </div>
+  });
+  mainWindow.loadFile('index.html');
+  Menu.setApplicationMenu(null);
+  // mainWindow.webContents.openDevTools(); // Descomenta pra ver erro
+}
 
-      <div id="dashboard" class="content">
-        <div class="flex" style="justify-content:space-between;margin-bottom:24px;">
-          <h2 style="font-size:20px;font-weight:700;">Dashboard</h2>
-          <div class="flex">
-            <button class="btn btn-success btn-sm" onclick="exportarDashboardExcel()">Excel</button>
-            <button class="btn btn-primary btn-sm" onclick="enviarDashboardEmail()">Email</button>
-          </div>
-        <div class="stat-grid">
-          <div class="stat-card"><h4>Total Kg Mês</h4><p id="statKg">0</p></div>
-          <div class="stat-card"><h4>Valor Total Mês</h4><p id="statValor">R$ 0</p></div>
-          <div class="stat-card"><h4>Lançamentos Mês</h4><p id="statLanc">0</p></div>
-          <div class="stat-card"><h4>% Perda Mensal</h4><p id="statPerda">0%</p></div>
-        </div>
-        <div class="grid">
-          <div class="card"><h3>Kg por Unidade - Mês</h3><div class="chart-container"><canvas id="grafUnidade"></canvas></div></div>
-          <div class="card"><h3>Kg por Tipo Sucata</h3><div class="chart-container"><canvas id="grafTipo"></canvas></div></div>
-          <div class="card"><h3>Top 10 Máquinas - Mês</h3><div class="chart-container"><canvas id="grafMaquina"></canvas></div></div>
-          <div class="card"><h3>Kg por Setor - Mês</h3><div class="chart-container"><canvas id="grafSetor"></canvas></div></div>
-        </div>
-        <div class="card"><h3>Sucata x Aço Comprado Mensal</h3><div class="chart-container"><canvas id="grafComparativo"></canvas></div></div>
-        <div class="card"><h3>Tendência Total Sucata - 12 Meses</h3><div class="chart-container"><canvas id="grafTendencia"></canvas></div></div>
-      </div>
+app.whenReady().then(createWindow);
 
-      <div id="lancamento" class="content hidden">
-        <h2 style="font-size:20px;font-weight:700;margin-bottom:24px;">Lançamento de Sucata</h2>
-        <div class="card">
-          <div class="grid">
-            <div class="form-group"><label>Data</label><input type="date" id="lanData"></div>
-            <div class="form-group"><label>Unidade</label><select id="lanUnidade" onchange="carregarSetores()"></select></div>
-            <div class="form-group"><label>Setor</label><select id="lanSetor" onchange="carregarMaquinas()"></select></div>
-            <div class="form-group"><label>Máquina</label><select id="lanMaquina"></select></div>
-            <div class="form-group"><label>Tipo Sucata</label><select id="lanTipo"></select></div>
-            <div class="form-group"><label>Peso (Kg)</label><input type="number" id="lanPeso" step="0.01" placeholder="0.00"></div>
-          </div>
-          <div class="flex">
-            <button class="btn btn-primary" onclick="salvarLancamento()" id="btnSalvarLan">Salvar Lançamento</button>
-            <button class="btn btn-secondary hidden" onclick="cancelarEdicaoLan()" id="btnCancelarLan">Cancelar</button>
-          </div>
-        </div>
-        <div class="card">
-          <h3>Histórico</h3>
-          <table class="table" id="tabelaLanc">
-            <thead><tr><th>Data</th><th>Unidade</th><th>Setor</th><th>Máquina</th><th>Tipo</th><th>Kg</th><th>Valor</th><th>Ações</th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
+ipcMain.handle('get-config', () => {
+  return lerConfig();
+});
 
-      <div id="compras" class="content hidden">
-        <h2 style="font-size:20px;font-weight:700;margin-bottom:24px;">Lançamento de Aço Comprado</h2>
-        <div class="card">
-          <div class="grid">
-            <div class="form-group"><label>Mês/Ano</label><input type="month" id="compraMes"></div>
-            <div class="form-group"><label>Total Kg Comprado</label><input type="number" id="compraKg" step="0.01" placeholder="0.00"></div>
-          </div>
-          <button class="btn btn-primary" onclick="salvarCompra()">Salvar Compra</button>
-        </div>
-        <div class="card">
-          <h3>Histórico de Compras</h3>
-          <table class="table" id="tabelaCompras">
-            <thead><tr><th>Mês</th><th>Kg Comprado</th><th>% Sucata</th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
+ipcMain.handle('salvar-tema', (event, tema) => {
+  const config = lerConfig();
+  config.tema = tema;
+  salvarConfig(config);
+  return { sucesso: true };
+});
 
-      <div id="relatorios" class="content hidden">
-        <h2 style="font-size:20px;font-weight:700;margin-bottom:24px;">Relatórios</h2>
-        <div class="card">
-          <div class="grid">
-            <div class="form-group"><label>Data Início</label><input type="date" id="relInicio"></div>
-            <div class="form-group"><label>Data Fim</label><input type="date" id="relFim"></div>
-            <div class="form-group"><label>Unidade</label><select id="relUnidade"><option value="">Todas</option></select></div>
-          </div>
-          <div class="flex">
-            <button class="btn btn-primary btn-sm" onclick="gerarRelatorio()">Filtrar</button>
-            <button class="btn btn-success btn-sm" onclick="exportarRelatorioExcel()">Exportar Excel</button>
-            <button class="btn btn-warning btn-sm" onclick="enviarRelatorioEmail()">Enviar Email</button>
-          </div>
-        </div>
-        <div class="card">
-          <table class="table" id="tabelaRel">
-            <thead><tr><th>Data</th><th>Unidade</th><th>Setor</th><th>Máquina</th><th>Tipo</th><th>Kg</th><th>R$/Kg</th><th>Total</th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
+ipcMain.handle('upload-logo', async () => {
+  const { canceled, filePaths } = await dialog.showOpenDialog({
+    title: 'Escolher Logo da Empresa',
+    filters: [{ name: 'Imagens', extensions: ['png', 'jpg', 'jpeg'] }],
+    properties: ['openFile']
+  });
+  if (canceled) return { sucesso: false };
+  try {
+    const logoPath = filePaths[0];
+    const ext = path.extname(logoPath);
+    const dest = path.join(app.getPath('userData'), 'logo' + ext);
+    fs.copyFileSync(logoPath, dest);
+    const config = lerConfig();
+    config.logo = dest;
+    salvarConfig(config);
+    return { sucesso: true, caminho: dest };
+  } catch (e) {
+    return { sucesso: false, erro: e.message };
+  }
+});
 
-      <div id="config" class="content hidden">
-        <h2 style="font-size:20px;font-weight:700;margin-bottom:24px;">Configuração Geral</h2>
-        <div class="grid">
-          <div class="card">
-            <h3>Matriz</h3>
-            <div class="form-group"><label>Nome</label><input type="text" id="cfgMatriz" placeholder="Nome da empresa"></div>
-            <button class="btn btn-primary btn-sm" onclick="salvarMatriz()">Salvar</button>
-          </div>
-          <div class="card">
-            <h3>Unidades</h3>
-            <div class="flex"><input type="text" id="novaUnidade" placeholder="Nome da unidade"><button class="btn btn-success btn-sm" onclick="addUnidade()">Adicionar</button></div>
-            <table class="table" id="tabelaUnid"><tbody></tbody></table>
-          </div>
-          <div class="card">
-            <h3>Tipos de Sucata</h3>
-            <div class="flex">
-              <input type="text" id="novoTipo" placeholder="Nome" style="flex:1;">
-              <input type="number" id="novoValor" placeholder="R$/Kg" step="0.01" style="width:120px;">
-              <button class="btn btn-success btn-sm" onclick="addTipo()">Adicionar</button>
-            </div>
-            <table class="table" id="tabelaTipo"><tbody></tbody></table>
-          </div>
-        </div>
-        <div class="card">
-          <h3>Setores e Máquinas</h3>
-          <div class="form-group"><label>Unidade</label><select id="cfgUnidadeSet" onchange="carregarSetoresCfg()"></select></div>
-          <div class="grid">
-            <div>
-              <h4 style="font-size:14px;margin-bottom:12px;font-weight:600;">Setores</h4>
-              <div class="flex"><input type="text" id="novoSetor" placeholder="Nome setor"><button class="btn btn-success btn-sm" onclick="addSetor()">Adicionar</button></div>
-              <table class="table" id="tabelaSetor"><tbody></tbody></table>
-            </div>
-            <div>
-              <h4 style="font-size:14px;margin-bottom:12px;font-weight:600;">Máquinas</h4>
-              <div class="form-group"><label>Setor</label><select id="cfgSetorMaq" onchange="carregarMaquinasCfg()"></select></div>
-              <div class="flex"><input type="text" id="novaMaquina" placeholder="Nome máquina"><button class="btn btn-success btn-sm" onclick="addMaquina()">Adicionar</button></div>
-              <table class="table" id="tabelaMaq"><tbody></tbody></table>
-            </div>
-          </div>
-        </div>
-      </div>
+ipcMain.handle('salvar-compra', async (event, compra) => {
+  const config = lerConfig();
+  if (!config.compras) config.compras = [];
+  const idx = config.compras.findIndex(c => c.mes === compra.mes);
+  if (idx >= 0) config.compras[idx] = compra;
+  else config.compras.push(compra);
+  salvarConfig(config);
+  return { sucesso: true };
+});
 
-      <div id="configuracoes" class="content hidden">
-        <h2 style="font-size:20px;font-weight:700;margin-bottom:24px;">Configurações do Sistema</h2>
-        <div class="grid">
-          <div class="card">
-            <h3>Logo da Empresa</h3>
-            <img id="logoPreview" class="logo-preview hidden" src="">
-            <button class="btn btn-primary btn-sm" onclick="uploadLogo()">Escolher Logo</button>
-          </div>
-          <div class="card">
-            <h3>Pasta de Backup</h3>
-            <p id="pastaAtual" style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;">Nenhuma pasta selecionada</p>
-            <button class="btn btn-primary btn-sm" onclick="escolherPasta()">Escolher/Trocar Pasta</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+ipcMain.handle('escolher-pasta', async () => {
+  const { canceled, filePaths } = await dialog.showOpenDialog({
+    title: 'Escolha a pasta para salvar os lançamentos',
+    properties: ['openDirectory', 'createDirectory']
+  });
+  const config = lerConfig();
+  if (!canceled && filePaths[0]) {
+    config.pastaBackup = filePaths[0];
+    salvarConfig(config);
+    return filePaths[0];
+  }
+  return config.pastaBackup || null;
+});
 
-  <script>
-    const { ipcRenderer } = require('electron');
-    const fs = require('fs');
-    let dados = { matriz: '', unidades: [], tipos: [], lancamentos: [] };
-    let compras = [];
-    let editandoId = null;
-    let charts = {};
-    let configApp = {};
+ipcMain.handle('get-pasta', () => {
+  return lerConfig().pastaBackup || null;
+});
 
-    window.onload = async () => {
-      await init();
-    };
+ipcMain.handle('salvar-backup', async (event, dados) => {
+  const config = lerConfig();
+  let pasta = config.pastaBackup;
+  if (!pasta) return { sucesso: false, erro: 'Pasta nao configurada em Configuracoes' };
+  try {
+    if (!fs.existsSync(pasta)) fs.mkdirSync(pasta, { recursive: true });
+    fs.writeFileSync(path.join(pasta, dados.nome), dados.conteudo, 'utf8');
+    return { sucesso: true, pasta: pasta };
+  } catch (e) {
+    return { sucesso: false, erro: e.message };
+  }
+});
 
-    async function init() {
-      configApp = await ipcRenderer.invoke('get-config');
-      compras = configApp.compras || [];
-      aplicarTema(configApp.tema || 'claro');
-      aplicarLogo(configApp.logo);
-      carregarDados();
-      await carregarHistoricoDaPasta();
-      atualizarDataAtual();
-      atualizarInterface();
-      atualizarPastaAtual();
-      atualizarDashboard();
-    }
+ipcMain.handle('ler-pasta', async (event, pasta) => {
+  try {
+    if (!fs.existsSync(pasta)) return [];
+    const arquivos = fs.readdirSync(pasta).filter(f => f.startsWith('LAN-') && f.endsWith('.json'));
+    const lancamentos = [];
+    arquivos.forEach(arquivo => {
+      try {
+        const conteudo = fs.readFileSync(path.join(pasta, arquivo), 'utf8');
+        const json = JSON.parse(conteudo);
+        if (json.id) lancamentos.push(json);
+      } catch (e) {}
+    });
+    return lancamentos;
+  } catch (e) {
+    return [];
+  }
+});
 
-    function aplicarTema(tema) {
-      document.documentElement.setAttribute('data-tema', tema);
-      document.getElementById('btnTema').textContent = tema === 'escuro'? '☀️' : '🌙';
-      const corTexto = tema === 'escuro'? '#f1f5f9' : '#0f172a';
-      const corGrid = tema === 'escuro'? '#334155' : '#e2e8f0';
-      Object.values(charts).forEach(c => {
-        if (c) {
-          c.options.plugins.legend.labels.color = corTexto;
-          if (c.options.scales?.x) {
-            c.options.scales.x.ticks.color = corTexto;
-            c.options.scales.x.grid.color = corGrid;
-          }
-          if (c.options.scales?.y) {
-            c.options.scales.y.ticks.color = corTexto;
-            c.options.scales.y.grid.color = corGrid;
-          }
-          c.update();
-        }
-      });
-    }
+ipcMain.handle('exportar-excel', async (event, dados, nomeArquivo) => {
+  const { canceled, filePath } = await dialog.showSaveDialog({
+    title: 'Salvar Excel',
+    defaultPath: nomeArquivo || 'relatorio.xlsx',
+    filters: [{ name: 'Excel', extensions: ['xlsx'] }]
+  });
+  if (canceled) return { sucesso: false };
+  try {
+    const ws = XLSX.utils.json_to_sheet(dados);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Dados');
+    XLSX.writeFile(wb, filePath);
+    return { sucesso: true, caminho: filePath };
+  } catch (e) {
+    return { sucesso: false, erro: e.message };
+  }
+});
 
-    async function alternarTema() {
-      const temaAtual = document.documentElement.getAttribute('data-tema') || 'claro';
-      const novoTema = temaAtual === 'claro'? 'escuro' : 'claro';
-      aplicarTema(novoTema);
-      await ipcRenderer.invoke('salvar-tema', novoTema);
-    }
+ipcMain.handle('abrir-email', async (event, assunto, corpo, anexo) => {
+  const url = `mailto:?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`;
+  shell.openExternal(url);
+  if (anexo) shell.showItemInFolder(anexo);
+  return { sucesso: true };
+});
 
-    function aplicarLogo(caminho) {
-      const img = document.getElementById('logoEmpresa');
-      const preview = document.getElementById('logoPreview');
-      if (caminho && fs.existsSync(caminho)) {
-        img.src = caminho;
-        img.style.display = 'block';
-        if (preview) {
-          preview.src = caminho;
-          preview.classList.remove('hidden');
-        }
-      } else {
-        img.style.display = 'none';
-        if (preview) preview.classList.add('hidden');
-      }
-    }
-
-    async function uploadLogo() {
-      const res = await ipcRenderer.invoke('upload-logo');
-      if (res.sucesso) {
-        configApp.logo = res.caminho;
-        aplicarLogo(res.caminho);
-        alert('Logo atualizado!');
-      }
-    }
-
-    function carregarDados() {
-      const d = localStorage.getItem('sucataDados');
-      if (d) dados = JSON.parse(d);
-      if (!dados.unidades) dados.unidades = [];
-      if (!dados.tipos) dados.tipos = [];
-      if (!dados.lancamentos) dados.lancamentos = [];
-    }
-
-    function salvarDados() {
-      localStorage.setItem('sucataDados', JSON.stringify(dados));
-    }
-
-    async function carregarHistoricoDaPasta() {
-      const pasta = await ipcRenderer.invoke('get-pasta');
-      if (!pasta) return;
-      const arquivos = await ipcRenderer.invoke('ler-pasta', pasta);
-      if (!arquivos || arquivos.length === 0) return;
-      const ids = new Set(dados.lancamentos.map(l => l.id));
-      arquivos.forEach(a => { if (!ids.has(a.id)) dados.lancamentos.push(a); });
-      salvarDados();
-    }
-
-    function atualizarDataAtual() {
-      const hoje = new Date().toISOString().split('T')[0];
-      document.getElementById('lanData').value = hoje;
-      document.getElementById('relInicio').value = hoje.substring(0,7)+'-01';
-      document.getElementById('relFim').value = hoje;
-      document.getElementById('compraMes').value = hoje.substring(0,7);
-    }
-
-    function abrirAba(aba, el) {
-      document.querySelectorAll('.content').forEach(c => c.classList.add('hidden'));
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      document.getElementById(aba).classList.remove('hidden');
-      el.classList.add('active');
-      if (aba === 'dashboard') atualizarDashboard();
-      if (aba === 'lancamento') renderizarTabela();
-      if (aba === 'config') carregarConfig();
-      if (aba === 'compras') renderizarCompras();
-    }
-
-    function atualizarInterface() {
-      carregarUnidades(); carregarTipos(); carregarUnidadesRel(); carregarUnidadesCfg();
-      document.getElementById('cfgMatriz').value = dados.matriz || '';
-    }
-
-    async function atualizarPastaAtual() {
-      const pasta = await ipcRenderer.invoke('get-pasta');
-      document.getElementById('pastaAtual').textContent = pasta || 'Nenhuma pasta selecionada';
-    }
-
-    function atualizarDashboard() {
-      const hoje = new Date();
-      const mesAtual = hoje.getMonth();
-      const anoAtual = hoje.getFullYear();
-      const mesStr = `${anoAtual}-${String(mesAtual+1).padStart(2,'0')}`;
-
-      const lancMes = dados.lancamentos.filter(l => {
-        const d = new Date(l.data);
-        return d.getMonth() === mesAtual && d.getFullYear() === anoAtual;
-      });
-      const totalKg = lancMes.reduce((s, l) => s + l.peso, 0);
-      const totalValor = lancMes.reduce((s, l) => s + l.valorTotal, 0);
-      document.getElementById('statKg').textContent = totalKg.toFixed(2);
-      document.getElementById('statValor').textContent = 'R$ ' + totalValor.toFixed(2);
-      document.getElementById('statLanc').textContent = lancMes.length;
-
-      const compraMes = compras.find(c => c.mes === mesStr);
-      if (compraMes && compraMes.kg > 0) {
-        const perc = (totalKg / compraMes.kg * 100).toFixed(2);
-        document.getElementById('statPerda').textContent = perc + '%';
-      } else {
-        document.getElementById('statPerda').textContent = '0%';
-      }
-
-      const kgUnidade = {};
-      lancMes.forEach(l => {
-        const nome = dados.unidades.find(u => u.id == l.unidadeId)?.nome || 'N/A';
-        kgUnidade[nome] = (kgUnidade[nome] || 0) + l.peso;
-      });
-      criarGrafico('grafUnidade', 'bar', Object.keys(kgUnidade), Object.values(kgUnidade), 'Kg por Unidade');
-
-      const kgTipo = {};
-      lancMes.forEach(l => {
-        const nome = dados.tipos.find(t => t.id == l.tipoId)?.nome || 'N/A';
-        kgTipo[nome] = (kgTipo[nome] || 0) + l.peso;
-      });
-      criarGrafico('grafTipo', 'doughnut', Object.keys(kgTipo), Object.values(kgTipo), 'Kg por Tipo');
-
-      const kgMaq = {};
-      lancMes.forEach(l => {
-        let nomeMaq = 'N/A';
-        const unid = dados.unidades.find(u => u.id == l.unidadeId);
-        if (unid) {
-          const setor = unid.setores.find(s => s.id == l.setorId);
-          if (setor) nomeMaq = setor.maquinas.find(m => m.id == l.maquinaId)?.nome || 'N/A';
-        }
-        kgMaq[nomeMaq] = (kgMaq[nomeMaq] || 0) + l.peso;
-      });
-      const topMaq = Object.entries(kgMaq).sort((a,b) => b[1]-a[1]).slice(0,10);
-      criarGrafico('grafMaquina', 'bar', topMaq.map(t=>t[0]), topMaq.map(t=>t[1]), 'Top 10 Máquinas');
-
-      const kgSetor = {};
-      lancMes.forEach(l => {
-        let nomeSetor = 'N/A';
-        const unid = dados.unidades.find(u => u.id == l.unidadeId);
-        if (unid) nomeSetor = unid.setores.find(s => s.id == l.setorId)?.nome || 'N/A';
-        kgSetor[nomeSetor] = (kgSetor[nomeSetor] || 0) + l.peso;
-      });
-      criarGrafico('grafSetor', 'bar', Object.keys(kgSetor), Object.values(kgSetor), 'Kg por Setor');
-
-      const meses = {};
-      dados.lancamentos.forEach(l => {
-        const mes = l.data.substring(0,7);
-        meses[mes] = (meses[mes] || 0) + l.peso;
-      });
-      const mesesOrd = Object.keys(meses).sort().slice(-12);
-      criarGrafico('grafTendencia', 'line', mesesOrd, mesesOrd.map(m=>meses[m]), 'Total Sucata Kg');
-
-      if (compraMes) {
-        criarGrafico('grafComparativo', 'bar',
-          ['Aço Comprado', 'Sucata Gerada'],
-          [compraMes.kg, totalKg],
-          `Perda: ${(totalKg/compraMes.kg*100).toFixed(2)}%`
-        );
-      }
-    }
-
-    function criarGrafico(id, tipo, labels, data, titulo) {
-      const ctx = document.getElementById(id);
-      if (charts[id]) charts[id].destroy();
-      const corTexto = document.documentElement.getAttribute('data-tema') === 'escuro'? '#f1f5f9' : '#0f172a';
-      const corGrid = document.documentElement.getAttribute('data-tema') ===
+app.on('window-all-closed', () => {
+  if (process.platform!== 'darwin') app.quit();
+});
