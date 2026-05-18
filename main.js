@@ -10,7 +10,6 @@ function lerConfig() {
     if (fs.existsSync(configPath)) return JSON.parse(fs.readFileSync(configPath, 'utf8'));
   } catch (e) {}
   return {
-    usuarios: [{usuario: 'admin', senha: 'admin', admin: true}],
     pastaBackup: null,
     tema: 'claro',
     logo: null,
@@ -38,7 +37,6 @@ function createWindow() {
   });
   mainWindow.loadFile('index.html');
   Menu.setApplicationMenu(null);
-  // mainWindow.webContents.openDevTools(); // Descomenta pra ver erro
 }
 
 app.whenReady().then(createWindow);
